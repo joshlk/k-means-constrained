@@ -14,7 +14,7 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-requirements = list(parse_requirements('requirements.txt'))
+requirements = list(parse_requirements('requirements.txt', session=False))
 
 setup(
     name='k_means_constrained',
