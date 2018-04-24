@@ -1,6 +1,6 @@
 
 """
-From template: https://github.com/pypa/sampleproject/blob/master/setup.py
+Based on template: https://github.com/pypa/sampleproject/blob/master/setup.py
 """
 
 from setuptools import setup, find_packages
@@ -14,7 +14,7 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-requirements = list(parse_requirements('requirements.txt', session=False))
+install_requires = parse_requirements('requirements.txt', session=False)
 
 setup(
     name='k_means_constrained',
@@ -27,7 +27,7 @@ setup(
     author_email='josh@outra.co.uk',
     keywords='kmeans k-means minimum maximum cluster segmentation size',
     packages=find_packages(exclude=['k_means_constrained']),
-    install_requires=requirements,
+    install_requires=[str(e.req) for e in install_requires],
 
     # Classifiers help users find your project by categorizing it.
     #
