@@ -13,10 +13,8 @@
 # License: BSD 3 clause
 
 import warnings
-
 import numpy as np
 import scipy.sparse as sp
-
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils.extmath import row_norms, squared_norm, cartesian
 from sklearn.utils import check_array
@@ -25,7 +23,8 @@ from sklearn.utils import as_float_array
 from sklearn.externals.joblib import Parallel
 from sklearn.externals.joblib import delayed
 
-from sklearn.cluster import _k_means
+# TODO: remove dependencies on internal scikit learn methods by importing them into this project
+from sklearn.cluster._k_means import _centers_dense, _centers_sparse
 from sklearn.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, _init_centroids
 
 from ortools.graph import pywrapgraph
@@ -35,7 +34,7 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
             n_init=10, max_iter=300, verbose=False,
             tol=1e-4, random_state=None, copy_x=True, n_jobs=1,
             return_n_iter=False):
-    """K-means clustering algorithm.
+    """K-Means clustering with minimum and maximum cluster size constraints.
 
     Read more in the :ref:`User Guide <k_means>`.
 
@@ -218,7 +217,7 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
                          max_iter=300, init='k-means++',
                          verbose=False, x_squared_norms=None,
                          random_state=None, tol=1e-4):
-    """A single run of k-means, assumes preparation completed prior.
+    """A single run of k-means constrained, assumes preparation completed prior.
 
     Parameters
     ----------
@@ -325,9 +324,9 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
 
         # computation of the means is also called the M-step of EM
         if sp.issparse(X):
-            centers = _k_means._centers_sparse(X, labels, n_clusters, distances)
+            centers = _centers_sparse(X, labels, n_clusters, distances)
         else:
-            centers = _k_means._centers_dense(X, labels, n_clusters, distances)
+            centers = _centers_dense(X, labels, n_clusters, distances)
 
         if verbose:
             print("Iteration %2d, inertia %.3f" % (i, inertia))
@@ -490,7 +489,7 @@ def solve_min_cost_flow_graph(edges, costs, capacities, supplies, n_C, n_X):
 
 
 class KMeansConstrained(KMeans):
-    """K-Means clustering constrained by a min or/and max cluster size
+    """K-Means clustering with minimum and maximum cluster size constraints
 
     Parameters
     ----------
@@ -588,7 +587,7 @@ class KMeansConstrained(KMeans):
     ------
     K-means problem constrained with a minimum and/or maximum size for each cluster.
 
-    The constrained assignment is problem is formulated as a Minimum Cost Flow (MCF) linear network optimisation
+    The constrained assignment is formulated as a Minimum Cost Flow (MCF) linear network optimisation
     problem. This is then solved using a cost-scaling push-relabel algorithm. The implementation used is
      Google's Operations Research tools's `SimpleMinCostFlow`.
 
