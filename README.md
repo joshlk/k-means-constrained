@@ -22,6 +22,27 @@ Ref:
     Microsoft Research, Redmond (2000): 1-8.](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2000-65.pdf)
 2. [Google's SimpleMinCostFlow C++ implementation](https://github.com/google/or-tools/blob/master/ortools/graph/min_cost_flow.h)
 
+# Example
+```python
+>>> from k_means_constrained import KMeansConstrained
+>>> import numpy as np
+>>> X = np.array([[1, 2], [1, 4], [1, 0],
+>>>                [4, 2], [4, 4], [4, 0]])
+>>> clf = KMeansConstrained(
+>>>     n_clusters=2,
+>>>     size_min=2,
+>>>     size_max=5,
+>>>     random_state=0
+>>> )
+>>> clf.fit(X)
+array([0, 0, 0, 1, 1, 1], dtype=int32)
+>>> clf.cluster_centers_
+array([[ 1.,  2.],
+       [ 4.,  2.]])
+>>> clf.predict([[0, 0], [4, 4]])
+array([0, 1], dtype=int32)
+```
+
 # Installation
 Requires [Google's OR-tools to be installed](https://developers.google.com/optimization/introduction/installing/binary).
 

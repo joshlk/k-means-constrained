@@ -574,12 +574,12 @@ class KMeansConstrained(KMeans):
     >>> import numpy as np
     >>> X = np.array([[1, 2], [1, 4], [1, 0],
     ...               [4, 2], [4, 4], [4, 0]])
-    >>> kmeans_c = KMeansConstrained(n_clusters=2, size_min=2, size_max=5, random_state=0).fit(X)
-    >>> kmeans_c.labels_
+    >>> clf = KMeansConstrained(n_clusters=2, size_min=2, size_max=5, random_state=0).fit(X)
+    >>> clf.labels_
     array([0, 0, 0, 1, 1, 1], dtype=int32)
-    >>> kmeans_c.predict([[0, 0], [4, 4]])
+    >>> clf.predict([[0, 0], [4, 4]])
     array([0, 1], dtype=int32)
-    >>> kmeans_c.cluster_centers_
+    >>> clf.cluster_centers_
     array([[ 1.,  2.],
            [ 4.,  2.]])
 
