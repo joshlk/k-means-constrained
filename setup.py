@@ -26,7 +26,7 @@ setup(
     author='Josh Levy-Kramer @ Outra',
     author_email='josh@outra.co.uk',
     keywords='kmeans k-means minimum maximum cluster segmentation size',
-    packages=find_packages(exclude=['k_means_constrained']),
+    packages=find_packages(),
     install_requires=[str(e.req) for e in install_requires],
 
     # Classifiers help users find your project by categorizing it.
