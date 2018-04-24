@@ -1,2 +1,2 @@
-ortools
-scikit-learn
+ortools >= 6.7
+scikit-learn >= 0.19
