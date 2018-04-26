@@ -219,3 +219,18 @@ def test_KMeansConstrained_parity_digits():
     assert_almost_equal(clf_constrained.cluster_centers_, clf_kmeans.cluster_centers_)
     assert_almost_equal(clf_constrained.inertia_, clf_kmeans.inertia_)
 
+
+def test_KMeansConstrained_performance():
+
+    n_cluster = 10
+    n_X = 500
+    d = 3
+    seed = 1
+
+    np.random.seed(seed=seed)
+    X = np.random.rand(n_X, d)
+    clf = KMeansConstrained(n_cluster, size_min=None, size_max=None,
+                            init='k-means++', n_init=10, max_iter=300, tol=1e-4,
+                            verbose=False, random_state=seed, copy_x=True, n_jobs=1)
+    y = clf.fit_predict(X)
+    #time = timeit('y = clf.fit_predict(X)', number=1, globals=globals())

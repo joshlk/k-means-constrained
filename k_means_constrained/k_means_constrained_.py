@@ -599,12 +599,13 @@ class KMeansConstrained(KMeans):
     """
 
     def __init__(self, n_clusters=8, size_min=None, size_max=None, init='k-means++', n_init=10, max_iter=300, tol=1e-4,
-                 verbose=0, random_state=None, copy_x=True, n_jobs=1):
+                 verbose=False, random_state=None, copy_x=True, n_jobs=1):
 
         self.size_min = size_min
         self.size_max = size_max
 
-        super().__init__(n_clusters, init, n_init, max_iter, tol, verbose, random_state, copy_x, n_jobs)
+        super().__init__(n_clusters=n_clusters, init=init, n_init=n_init, max_iter=max_iter, tol=tol,
+                         verbose=verbose, random_state=random_state, copy_x=copy_x, n_jobs=n_jobs)
 
     def fit(self, X, y=None):
         """Compute k-means clustering.
