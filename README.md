@@ -54,7 +54,7 @@ As this package uses internal scikit learn methods associated with k-means
 it may break with other versions of sci-kit learn. This can be addressed
 in the future by importing the internal methods into this project.
 
-# Todo:
-* Documentation
-* Test with sparse `X`
-* Remove dependencies on internal scikit learn methods by importing them into this project
+# TODO:
+- [ ] Documentation
+- [ ] Test with sparse `X`
+- [ ] Remove dependencies on internal scikit learn methods by importing them into this project
