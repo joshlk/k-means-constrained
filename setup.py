@@ -7,6 +7,8 @@ from setuptools import setup, find_packages
 from pip.req import parse_requirements
 from codecs import open # To use a consistent encoding
 from os import path
+from Cython.Build import cythonize
+import numpy as np
 
 here = path.abspath(path.dirname(__file__))
 
@@ -15,6 +17,9 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 install_requires = parse_requirements('requirements.txt', session=False)
+
+# Profile cython and output html with annotation
+cython_options = {"compiler_directives": {"profile": True}, "annotate": True}
 
 setup(
     name='k_means_constrained',
@@ -52,4 +57,8 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
     ],
+
+    # For cython
+    ext_modules=cythonize("k_means_constrained/mincostflow_cython_.pyx", **cython_options),
+    include_dirs=[np.get_include()]
 )

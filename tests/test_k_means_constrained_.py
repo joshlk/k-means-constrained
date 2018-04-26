@@ -223,7 +223,7 @@ def test_KMeansConstrained_parity_digits():
 def test_KMeansConstrained_performance():
 
     n_cluster = 10
-    n_X = 500
+    n_X = 1000
     d = 3
     seed = 1
 
