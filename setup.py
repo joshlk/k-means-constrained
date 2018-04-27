@@ -1,5 +1,11 @@
 
 """
+To build pip tar:
+`python setup.py sdist`
+
+To compile cython (better to use the compile_cython.py script):
+`python setup.py build_ext`
+
 Based on template: https://github.com/pypa/sampleproject/blob/master/setup.py
 """
 
@@ -23,7 +29,7 @@ cython_options = {"compiler_directives": {"profile": True}, "annotate": True}
 
 setup(
     name='k_means_constrained',
-    version='0.1.0',
+    version='0.2.0',
     description='K-Means clustering constrained with minimum and maximum cluster size',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -59,6 +65,6 @@ setup(
     ],
 
     # For cython
-    ext_modules=cythonize("k_means_constrained/mincostflow_cython_.pyx", **cython_options),
+    ext_modules=cythonize("k_means_constrained/mincostflow_vectorized_.pyx", **cython_options),
     include_dirs=[np.get_include()]
 )
