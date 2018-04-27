@@ -29,6 +29,8 @@ from sklearn.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans,
 
 from ortools.graph import pywrapgraph
 
+from k_means_constrained.mincostflow_vectorized import SimpleMinCostFlowVectorized
+
 
 def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-means++',
             n_init=10, max_iter=300, verbose=False,
@@ -450,10 +452,10 @@ def minimum_cost_flow_problem_graph(X, C, D, size_min, size_max):
     ])
 
     # All arrays must be of int dtype for `SimpleMinCostFlow`
-    edges = edges.astype('int')
-    costs = np.around(costs*1000, 0).astype('int')  # Times by 1000 to give extra precision
-    capacities = capacities.astype('int')
-    supplies = supplies.astype('int')
+    edges = edges.astype('int32')
+    costs = np.around(costs*1000, 0).astype('int32')  # Times by 1000 to give extra precision
+    capacities = capacities.astype('int32')
+    supplies = supplies.astype('int32')
 
     return edges, costs, capacities, supplies, n_C, n_X
 
@@ -461,29 +463,28 @@ def minimum_cost_flow_problem_graph(X, C, D, size_min, size_max):
 def solve_min_cost_flow_graph(edges, costs, capacities, supplies, n_C, n_X):
 
     # Instantiate a SimpleMinCostFlow solver.
-    min_cost_flow = pywrapgraph.SimpleMinCostFlow()
+    min_cost_flow = SimpleMinCostFlowVectorized()
 
-    if (edges.dtype != 'int') or (costs.dtype != 'int') or (capacities.dtype != 'int') or (supplies.dtype != 'int'):
+    if (edges.dtype != 'int32') or (costs.dtype != 'int32') \
+            or (capacities.dtype != 'int32') or (supplies.dtype != 'int32'):
         raise ValueError("`edges`, `costs`, `capacities`, `supplies` must all be int dtype")
 
     N_edges = edges.shape[0]
     N_nodes = len(supplies)
 
     # Add each edge with associated capacities and cost
-    for i in range(0, N_edges):
-        min_cost_flow.AddArcWithCapacityAndUnitCost(int(edges[i, 0]), int(edges[i, 1]),
-                                                    int(capacities[i]), int(costs[i]))
+    min_cost_flow.AddArcWithCapacityAndUnitCostVectorized(edges[:,0], edges[:,1], capacities, costs)
 
     # Add node supplies
-    for i in range(0, N_nodes):
-        min_cost_flow.SetNodeSupply(i, int(supplies[i]))
+    min_cost_flow.SetNodeSupplyVectorized(np.arange(N_nodes, dtype='int32'), supplies)
 
     # Find the minimum cost flow between node 0 and node 4.
     if min_cost_flow.Solve() != min_cost_flow.OPTIMAL:
         raise Exception('There was an issue with the min cost flow input.')
 
     # Assignment
-    labels_M = np.array([min_cost_flow.Flow(i) for i in range(n_X*n_C)]).reshape(n_X, n_C)
+    labels_M = min_cost_flow.FlowVectorized(np.arange(n_X * n_C, dtype='int32')).reshape(n_X, n_C)
+
     labels = labels_M.argmax(axis=1)
     return labels
 

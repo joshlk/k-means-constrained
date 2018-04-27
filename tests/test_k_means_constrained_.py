@@ -155,8 +155,7 @@ def test_KMeansConstrained():
     clf = KMeansConstrained(
         n_clusters=k,
         size_min=size_min,
-        size_max=size_max,
-        verbose=1
+        size_max=size_max
     )
 
     clf.fit(X)
@@ -223,7 +222,7 @@ def test_KMeansConstrained_parity_digits():
 def test_KMeansConstrained_performance():
 
     n_cluster = 10
-    n_X = 500
+    n_X = 1000
     d = 3
     seed = 1
 
