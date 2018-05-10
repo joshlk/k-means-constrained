@@ -51,7 +51,7 @@ Currently tested with:
 * ortools == 6.7.4973
 
 As this package uses internal scikit learn methods associated with k-means
-it may break with other versions of sci-kit learn. This can be addressed
+it may break with other versions of scikit-learn. This can be addressed
 in the future by importing the internal methods into this project.
 
 # TODO:
