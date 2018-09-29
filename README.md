@@ -1,4 +1,4 @@
-# k_means_constrained
+# k-means-constrained
 K-means clustering implementation whereby a minimum and/or maximum size for each
 cluster can be specified.
 
