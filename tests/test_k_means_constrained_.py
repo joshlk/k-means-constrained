@@ -5,9 +5,10 @@ import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_equal, assert_almost_equal
 from sklearn import datasets
-from sklearn.cluster.k_means_ import _labels_inertia, KMeans
+
 from sklearn.metrics import euclidean_distances
 from sklearn.utils.extmath import row_norms
+from sklearn.cluster.k_means_ import KMeans, _labels_inertia
 
 from k_means_constrained.k_means_constrained_ import minimum_cost_flow_problem_graph, solve_min_cost_flow_graph, \
     KMeansConstrained, _labels_constrained
@@ -129,7 +130,8 @@ def test__labels_constrained_kmeans_parity():
 
     distances_kmeans = np.zeros(shape=(X.shape[0],), dtype=X.dtype)
     labels_kmeans, inertia_kmeans = \
-        _labels_inertia(X, x_squared_norms, centers, precompute_distances=False, distances=distances_kmeans)
+        _labels_inertia(X=X, x_squared_norms=x_squared_norms, centers=centers, precompute_distances=False,
+                        distances=distances_kmeans, sample_weight=None)
 
     assert_array_equal(labels_constrained, labels_kmeans)
     assert_almost_equal(distances_constrained, distances_kmeans)

@@ -23,9 +23,9 @@ from sklearn.utils import as_float_array
 from sklearn.externals.joblib import Parallel
 from sklearn.externals.joblib import delayed
 
-# TODO: remove dependencies on internal scikit learn methods by importing them into this project
-from sklearn.cluster._k_means import _centers_dense, _centers_sparse
-from sklearn.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, _init_centroids
+# Internal scikit learn methods imported into this project
+from .sklearn_cluster._k_means import _centers_dense, _centers_sparse
+from .sklearn_cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, _init_centroids
 
 from ortools.graph import pywrapgraph
 
