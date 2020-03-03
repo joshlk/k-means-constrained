@@ -198,7 +198,6 @@ def test_KMeansConstrained_n_jobs():
 
 
 def test_KMeansConstrained_parity_digits():
-
     iris = datasets.load_iris()
     X = iris.data
 
@@ -206,18 +205,25 @@ def test_KMeansConstrained_parity_digits():
     random_state = 1
     size_min, size_max = None, None  # No restrictions and so should produce same result
 
-
     clf_constrained = KMeansConstrained(
-        n_clusters=k,
         size_min=size_min,
         size_max=size_max,
-        random_state=random_state
+        n_clusters=k,
+        random_state=random_state,
+        init='k-means++',
+        n_init=10,
+        max_iter=300,
+        tol=1e-4
     )
     y_constrained = clf_constrained.fit_predict(X)
 
     clf_kmeans = KMeans(
         n_clusters=k,
-        random_state=random_state
+        random_state=random_state,
+        init='k-means++',
+        n_init=10,
+        max_iter=300,
+        tol=1e-4
     )
     y_kmeans = clf_kmeans.fit_predict(X)
 
@@ -227,8 +233,8 @@ def test_KMeansConstrained_parity_digits():
 
     assert_almost_equal(constrained_cluster_centers, kmean_cluster_centers)
 
-def test_KMeansConstrained_performance():
 
+def test_KMeansConstrained_performance():
     n_cluster = 10
     n_X = 1000
     d = 3
@@ -240,4 +246,4 @@ def test_KMeansConstrained_performance():
                             init='k-means++', n_init=10, max_iter=300, tol=1e-4,
                             verbose=False, random_state=seed, copy_x=True, n_jobs=1)
     y = clf.fit_predict(X)
-    #time = timeit('y = clf.fit_predict(X)', number=1, globals=globals())
+    # time = timeit('y = clf.fit_predict(X)', number=1, globals=globals())
