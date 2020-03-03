@@ -14,6 +14,11 @@ from k_means_constrained.k_means_constrained_ import minimum_cost_flow_problem_g
     KMeansConstrained, _labels_constrained
 
 
+def sort_coordinates(array):
+    array = array[np.lexsort(np.fliplr(array).T)]
+    return array
+
+
 def test_minimum_cost_flow_problem_graph():
     # Setup graph
     X = np.array([
@@ -216,10 +221,11 @@ def test_KMeansConstrained_parity_digits():
     )
     y_kmeans = clf_kmeans.fit_predict(X)
 
-    #assert_array_equal(y_constrained, y_kmeans)  # Clusters indexes will be different
-    assert_almost_equal(clf_constrained.cluster_centers_, clf_kmeans.cluster_centers_)
-    assert_almost_equal(clf_constrained.inertia_, clf_kmeans.inertia_)
+    # Sort the cluster coordinates (otherwise in a random order)
+    constrained_cluster_centers = sort_coordinates(clf_constrained.cluster_centers_)
+    kmean_cluster_centers = sort_coordinates(clf_kmeans.cluster_centers_)
 
+    assert_almost_equal(constrained_cluster_centers, kmean_cluster_centers)
 
 def test_KMeansConstrained_performance():
 
