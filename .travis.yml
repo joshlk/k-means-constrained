@@ -1,17 +1,14 @@
-matrix:
-  include:
-    - python: 2.7
-      env: TOXENV=py27
-    - python: 3.4
-      env: TOXENV=py34
-    - python: 3.5
-      env: TOXENV=py35
-    - python: 3.6
-      env: TOXENV=py36
-
-install: pip install tox
-
-script: tox
-
-notifications:
-  email: false
+language: python
+python:
+  - "2.7"
+  - "3.5"
+  - "3.6"      # current default Python on Travis CI
+  - "3.7"
+# command to install dependencies
+install:
+  - pip install -r requirements.txt
+  - pip install -r requirements_test.txt
+  - python compile_cython.py
+# command to run tests
+script:
+  - pytest
