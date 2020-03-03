@@ -1,6 +1,6 @@
 language: python
 os:
-#  - linux
+  - linux
   - osx
 python:
   - "3.6"
