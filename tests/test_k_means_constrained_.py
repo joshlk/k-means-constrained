@@ -138,7 +138,7 @@ def test__labels_constrained_kmeans_parity():
     distances_kmeans = np.zeros(shape=(X.shape[0],), dtype=X.dtype)
     labels_kmeans, inertia_kmeans = \
         _labels_inertia(X=X, x_squared_norms=x_squared_norms, centers=centers, precompute_distances=False,
-                        distances=distances_kmeans, sample_weight=None)
+                        distances=distances_kmeans)
 
     assert_array_equal(labels_constrained, labels_kmeans)
     assert_almost_equal(distances_constrained, distances_kmeans)
