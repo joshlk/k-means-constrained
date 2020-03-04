@@ -1,5 +1,6 @@
+scikit-learn==0.19.2
+ortools >= 6.7
 pytest
 pandas
 cython
 ipython
-scikit-learn==0.19
