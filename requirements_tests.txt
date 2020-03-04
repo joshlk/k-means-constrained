@@ -2,4 +2,4 @@ pytest
 pandas
 cython
 ipython
-scikit-learn == 0.19
+scikit-learn==0.19
