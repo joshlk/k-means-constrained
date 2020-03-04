@@ -1,0 +1,4 @@
+pytest
+pandas
+cython
+ipython

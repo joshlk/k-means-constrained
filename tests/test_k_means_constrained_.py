@@ -217,15 +217,22 @@ def test_KMeansConstrained_parity_digits():
     )
     y_constrained = clf_constrained.fit_predict(X)
 
+    # TODO: `n_init` has been increased to 200 from default 10. This is because there is a discrepancy scikit-learn v0.22 https://github.com/scikit-learn/scikit-learn/issues/16623
     clf_kmeans = KMeans(
         n_clusters=k,
         random_state=random_state,
         init='k-means++',
-        n_init=10,
+        n_init=200,
         max_iter=300,
         tol=1e-4
     )
     y_kmeans = clf_kmeans.fit_predict(X)
+
+    # Each cluster should have the same number of datapoints assigned to it
+    constrained_ndp = pd.Series(y_constrained).value_counts().values
+    kmeans_ndp = pd.Series(y_kmeans).value_counts().values
+
+    assert_array_equal(constrained_ndp, kmeans_ndp)
 
     # Sort the cluster coordinates (otherwise in a random order)
     constrained_cluster_centers = sort_coordinates(clf_constrained.cluster_centers_)
@@ -247,3 +254,23 @@ def test_KMeansConstrained_performance():
                             verbose=False, random_state=seed, copy_x=True, n_jobs=1)
     y = clf.fit_predict(X)
     # time = timeit('y = clf.fit_predict(X)', number=1, globals=globals())
+
+
+from sklearn import datasets
+from sklearn.cluster import KMeans
+import pandas as pd
+
+iris = datasets.load_iris()
+X = iris.data
+k = 8
+random_state = 1
+
+clf_kmeans = KMeans(
+    n_clusters=k,
+    random_state=random_state,
+    algorithm='full'
+)
+y = clf_kmeans.fit_predict(X)
+
+# Count number of data points for each cluster and sort
+ndp = pd.Series(y).value_counts().values
