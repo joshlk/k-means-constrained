@@ -10,6 +10,8 @@ from sklearn.metrics import euclidean_distances
 from sklearn.utils.extmath import row_norms
 from sklearn.cluster.k_means_ import KMeans, _labels_inertia
 
+from k_means_constrained.sklearn_cluster.k_means_ import KMeans
+
 from k_means_constrained.k_means_constrained_ import minimum_cost_flow_problem_graph, solve_min_cost_flow_graph, \
     KMeansConstrained, _labels_constrained
 
@@ -217,12 +219,12 @@ def test_KMeansConstrained_parity_digits():
     )
     y_constrained = clf_constrained.fit_predict(X)
 
-    # TODO: `n_init` has been increased to 200 from default 10. This is because there is a discrepancy scikit-learn v0.22 https://github.com/scikit-learn/scikit-learn/issues/16623
+    # TODO: Testing scikit-learn has be set to v0.19. This is because there is a discrepancy scikit-learn v0.22 https://github.com/scikit-learn/scikit-learn/issues/16623
     clf_kmeans = KMeans(
         n_clusters=k,
         random_state=random_state,
         init='k-means++',
-        n_init=200,
+        n_init=10,
         max_iter=300,
         tol=1e-4
     )
@@ -232,7 +234,7 @@ def test_KMeansConstrained_parity_digits():
     constrained_ndp = pd.Series(y_constrained).value_counts().values
     kmeans_ndp = pd.Series(y_kmeans).value_counts().values
 
-    assert_array_equal(constrained_ndp, kmeans_ndp)
+    assert_almost_equal(constrained_ndp, kmeans_ndp)
 
     # Sort the cluster coordinates (otherwise in a random order)
     constrained_cluster_centers = sort_coordinates(clf_constrained.cluster_centers_)
