@@ -25,11 +25,14 @@ Ref:
     Microsoft Research, Redmond (2000): 1-8.](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2000-65.pdf)
 2. [Google's SimpleMinCostFlow C++ implementation](https://github.com/google/or-tools/blob/master/ortools/graph/min_cost_flow.h)
 
-# Install
+# Installation
+You can install the k-mean-constrained from PyPI:
 
 ```
 pip install k-mean-constrained
 ```
+
+It is suported on Python 3.6 and above.
 
 # Example
 ```python
