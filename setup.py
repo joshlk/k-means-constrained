@@ -1,7 +1,13 @@
 
 """
-To build pip tar:
-`python setup.py sdist`
+To build pip tar and distribute to Pypi:
+`k_means_con/bin/activate`
+First test:
+`twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
+Then test install (in new env):
+`pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple`
+Then push to real PyPI:
+`twine upload dist/*`
 
 To compile cython (better to use the compile_cython.py script):
 `python setup.py build_ext`
@@ -10,11 +16,15 @@ Based on template: https://github.com/pypa/sampleproject/blob/master/setup.py
 """
 
 from setuptools import setup, find_packages
-from pip.req import parse_requirements
 from codecs import open # To use a consistent encoding
 from os import path
 from Cython.Build import cythonize
 import numpy as np
+
+def parse_requirements(filename):
+    """ load requirements from a pip requirements file """
+    lineiter = (line.strip() for line in open(filename))
+    return [line for line in lineiter if line and not line.startswith("#")]
 
 here = path.abspath(path.dirname(__file__))
 
@@ -22,14 +32,12 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-install_requires = parse_requirements('requirements.txt', session=False)
-
 # Profile cython and output html with annotation
 cython_options = {"compiler_directives": {"profile": True}, "annotate": True}
 
 setup(
     name='k_means_constrained',
-    version='0.3.0',
+    version='0.3.1',
     description='K-Means clustering constrained with minimum and maximum cluster size',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -37,7 +45,8 @@ setup(
     author='Josh Levy-Kramer',
     keywords='kmeans k-means minimum maximum cluster segmentation size',
     packages=find_packages(),
-    install_requires=[str(e.req) for e in install_requires],
+    install_requires=parse_requirements('requirements.txt'),
+    python_requires='>=3',
 
     # Classifiers help users find your project by categorizing it.
     #
@@ -63,6 +72,11 @@ setup(
     ],
 
     # For cython
-    ext_modules=cythonize("k_means_constrained/mincostflow_vectorized_.pyx", **cython_options),
+    ext_modules=cythonize(
+        [
+            "k_means_constrained/mincostflow_vectorized_.pyx",
+            "k_means_constrained/sklearn_cluster/_k_means.pyx"
+        ],
+        **cython_options),
     include_dirs=[np.get_include()]
 )

@@ -20,8 +20,8 @@ from sklearn.utils.extmath import row_norms, squared_norm, cartesian
 from sklearn.utils import check_array
 from sklearn.utils import check_random_state
 from sklearn.utils import as_float_array
-from sklearn.externals.joblib import Parallel
-from sklearn.externals.joblib import delayed
+from joblib import Parallel
+from joblib import delayed
 
 # Internal scikit learn methods imported into this project
 from .sklearn_cluster._k_means import _centers_dense, _centers_sparse

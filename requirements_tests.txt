@@ -1,5 +1,6 @@
 scikit-learn==0.19.2
 ortools >= 6.7
+joblib
 scipy
 pytest
 pandas
