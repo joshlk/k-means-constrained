@@ -1,5 +1,4 @@
-![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)]
-[![Build Status](https://travis-ci.com/joshlk/k-mean-constrained.svg?branch=master)](https://travis-ci.com/joshlk/k-mean-constrained)
+![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue) [![Build Status](https://travis-ci.com/joshlk/k-mean-constrained.svg?branch=master)](https://travis-ci.com/joshlk/k-mean-constrained)
 [Documentation](https://joshlk.github.io/k-mean-constrained/)
 
 # k-means-constrained
