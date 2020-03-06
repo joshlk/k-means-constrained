@@ -29,13 +29,12 @@ cython_options = {"compiler_directives": {"profile": True}, "annotate": True}
 
 setup(
     name='k_means_constrained',
-    version='0.2.0',
+    version='0.3.0',
     description='K-Means clustering constrained with minimum and maximum cluster size',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/outrauk/k_means_constrained',
-    author='Josh Levy-Kramer @ Outra',
-    author_email='josh@outra.co.uk',
+    url='https://github.com/joshlk/k-mean-constrained',
+    author='Josh Levy-Kramer',
     keywords='kmeans k-means minimum maximum cluster segmentation size',
     packages=find_packages(),
     install_requires=[str(e.req) for e in install_requires],
@@ -49,7 +48,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -60,7 +59,6 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
     ],
 
