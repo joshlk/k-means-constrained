@@ -1,2 +1,5 @@
 Build docs:
-`make html`
+```
+make html
+mv _build/html ../docs
+``
