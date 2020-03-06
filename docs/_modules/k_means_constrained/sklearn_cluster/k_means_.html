@@ -1,0 +1,722 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>k_means_constrained.sklearn_cluster.k_means_ &#8212; k-means-constrained 0.0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for k_means_constrained.sklearn_cluster.k_means_</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;K-means clustering&quot;&quot;&quot;</span>
+
+<span class="c1"># Authors: Gael Varoquaux &lt;gael.varoquaux@normalesup.org&gt;</span>
+<span class="c1">#          Thomas Rueckstiess &lt;ruecksti@in.tum.de&gt;</span>
+<span class="c1">#          James Bergstra &lt;james.bergstra@umontreal.ca&gt;</span>
+<span class="c1">#          Jan Schlueter &lt;scikit-learn@jan-schlueter.de&gt;</span>
+<span class="c1">#          Nelle Varoquaux</span>
+<span class="c1">#          Peter Prettenhofer &lt;peter.prettenhofer@gmail.com&gt;</span>
+<span class="c1">#          Olivier Grisel &lt;olivier.grisel@ensta.org&gt;</span>
+<span class="c1">#          Mathieu Blondel &lt;mathieu@mblondel.org&gt;</span>
+<span class="c1">#          Robert Layton &lt;robertlayton@gmail.com&gt;</span>
+<span class="c1"># License: BSD 3 clause</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.sparse</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClusterMixin</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals.six</span> <span class="k">import</span> <span class="n">string_types</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics.pairwise</span> <span class="k">import</span> <span class="n">euclidean_distances</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics.pairwise</span> <span class="k">import</span> <span class="n">pairwise_distances_argmin_min</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">check_array</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">check_random_state</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.extmath</span> <span class="k">import</span> <span class="n">row_norms</span><span class="p">,</span> <span class="n">stable_cumsum</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.sparsefuncs</span> <span class="k">import</span> <span class="n">mean_variance_axis</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">FLOAT_DTYPES</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">_k_means</span>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># Initialization heuristic</span>
+
+
+<span class="k">def</span> <span class="nf">_k_init</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="p">,</span> <span class="n">random_state</span><span class="p">,</span> <span class="n">n_local_trials</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Init n_clusters seeds according to k-means++</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    X : array or sparse matrix, shape (n_samples, n_features)</span>
+<span class="sd">        The data to pick seeds for. To avoid memory copy, the input data</span>
+<span class="sd">        should be double precision (dtype=np.float64).</span>
+
+<span class="sd">    n_clusters : integer</span>
+<span class="sd">        The number of seeds to choose</span>
+
+<span class="sd">    x_squared_norms : array, shape (n_samples,)</span>
+<span class="sd">        Squared Euclidean norm of each data point.</span>
+
+<span class="sd">    random_state : numpy.RandomState</span>
+<span class="sd">        The generator used to initialize the centers.</span>
+
+<span class="sd">    n_local_trials : integer, optional</span>
+<span class="sd">        The number of seeding trials for each center (except the first),</span>
+<span class="sd">        of which the one reducing inertia the most is greedily chosen.</span>
+<span class="sd">        Set to None to make the number of trials depend logarithmically</span>
+<span class="sd">        on the number of seeds (2+log(k)); this is the default.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Selects initial cluster centers for k-mean clustering in a smart way</span>
+<span class="sd">    to speed up convergence. see: Arthur, D. and Vassilvitskii, S.</span>
+<span class="sd">    &quot;k-means++: the advantages of careful seeding&quot;. ACM-SIAM symposium</span>
+<span class="sd">    on Discrete algorithms. 2007</span>
+
+<span class="sd">    Version ported from http://www.stanford.edu/~darthur/kMeansppTest.zip,</span>
+<span class="sd">    which is the implementation used in the aforementioned paper.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_clusters</span><span class="p">,</span> <span class="n">n_features</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">x_squared_norms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;x_squared_norms None in _k_init&#39;</span>
+
+    <span class="c1"># Set the number of local seeding trials if none is given</span>
+    <span class="k">if</span> <span class="n">n_local_trials</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># This is what Arthur/Vassilvitskii tried, but did not report</span>
+        <span class="c1"># specific results for other than mentioning in the conclusion</span>
+        <span class="c1"># that it helped.</span>
+        <span class="n">n_local_trials</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_clusters</span><span class="p">))</span>
+
+    <span class="c1"># Pick first center randomly</span>
+    <span class="n">center_id</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+        <span class="n">centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">center_id</span><span class="p">]</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">center_id</span><span class="p">]</span>
+
+    <span class="c1"># Initialize list of closest distances and calculate current potential</span>
+    <span class="n">closest_dist_sq</span> <span class="o">=</span> <span class="n">euclidean_distances</span><span class="p">(</span>
+        <span class="n">centers</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y_norm_squared</span><span class="o">=</span><span class="n">x_squared_norms</span><span class="p">,</span>
+        <span class="n">squared</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">current_pot</span> <span class="o">=</span> <span class="n">closest_dist_sq</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c1"># Pick the remaining n_clusters-1 points</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">):</span>
+        <span class="c1"># Choose center candidates by sampling with probability proportional</span>
+        <span class="c1"># to the squared distance to the closest existing center</span>
+        <span class="n">rand_vals</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">random_sample</span><span class="p">(</span><span class="n">n_local_trials</span><span class="p">)</span> <span class="o">*</span> <span class="n">current_pot</span>
+        <span class="n">candidate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">stable_cumsum</span><span class="p">(</span><span class="n">closest_dist_sq</span><span class="p">),</span>
+                                        <span class="n">rand_vals</span><span class="p">)</span>
+
+        <span class="c1"># Compute distances to center candidates</span>
+        <span class="n">distance_to_candidates</span> <span class="o">=</span> <span class="n">euclidean_distances</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">candidate_ids</span><span class="p">],</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y_norm_squared</span><span class="o">=</span><span class="n">x_squared_norms</span><span class="p">,</span> <span class="n">squared</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Decide which candidate is the best</span>
+        <span class="n">best_candidate</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">best_pot</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">best_dist_sq</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_local_trials</span><span class="p">):</span>
+            <span class="c1"># Compute potential when including center candidate</span>
+            <span class="n">new_dist_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">closest_dist_sq</span><span class="p">,</span>
+                                     <span class="n">distance_to_candidates</span><span class="p">[</span><span class="n">trial</span><span class="p">])</span>
+            <span class="n">new_pot</span> <span class="o">=</span> <span class="n">new_dist_sq</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+            <span class="c1"># Store result if it is the best local trial so far</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">best_candidate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">new_pot</span> <span class="o">&lt;</span> <span class="n">best_pot</span><span class="p">):</span>
+                <span class="n">best_candidate</span> <span class="o">=</span> <span class="n">candidate_ids</span><span class="p">[</span><span class="n">trial</span><span class="p">]</span>
+                <span class="n">best_pot</span> <span class="o">=</span> <span class="n">new_pot</span>
+                <span class="n">best_dist_sq</span> <span class="o">=</span> <span class="n">new_dist_sq</span>
+
+        <span class="c1"># Permanently add best center candidate found in local tries</span>
+        <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="n">centers</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">best_candidate</span><span class="p">]</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">centers</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">best_candidate</span><span class="p">]</span>
+        <span class="n">current_pot</span> <span class="o">=</span> <span class="n">best_pot</span>
+        <span class="n">closest_dist_sq</span> <span class="o">=</span> <span class="n">best_dist_sq</span>
+
+    <span class="k">return</span> <span class="n">centers</span>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># K-means batch estimation by EM (expectation maximization)</span>
+
+<span class="k">def</span> <span class="nf">_validate_center_shape</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_centers</span><span class="p">,</span> <span class="n">centers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if centers is compatible with X and n_centers&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_centers</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The shape of the initial centers (</span><span class="si">%s</span><span class="s1">) &#39;</span>
+                         <span class="s1">&#39;does not match the number of clusters </span><span class="si">%i</span><span class="s1">&#39;</span>
+                         <span class="o">%</span> <span class="p">(</span><span class="n">centers</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">n_centers</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">centers</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The number of features of the initial centers </span><span class="si">%s</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;does not match the number of features of the data </span><span class="si">%s</span><span class="s2">.&quot;</span>
+            <span class="o">%</span> <span class="p">(</span><span class="n">centers</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+
+<span class="k">def</span> <span class="nf">_tolerance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">tol</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a tolerance which is independent of the dataset&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+        <span class="n">variances</span> <span class="o">=</span> <span class="n">mean_variance_axis</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">variances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span> <span class="o">*</span> <span class="n">tol</span>
+
+
+<span class="k">def</span> <span class="nf">_labels_inertia_precompute_dense</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">distances</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute labels and inertia using a full distance matrix.</span>
+
+<span class="sd">    This will overwrite the &#39;distances&#39; array in-place.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : numpy array, shape (n_sample, n_features)</span>
+<span class="sd">        Input data.</span>
+
+<span class="sd">    x_squared_norms : numpy array, shape (n_samples,)</span>
+<span class="sd">        Precomputed squared norms of X.</span>
+
+<span class="sd">    centers : numpy array, shape (n_clusters, n_features)</span>
+<span class="sd">        Cluster centers which data is assigned to.</span>
+
+<span class="sd">    distances : numpy array, shape (n_samples,)</span>
+<span class="sd">        Pre-allocated array in which distances are stored.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    labels : numpy array, dtype=np.int, shape (n_samples,)</span>
+<span class="sd">        Indices of clusters that samples are assigned to.</span>
+
+<span class="sd">    inertia : float</span>
+<span class="sd">        Sum of distances of samples to their closest cluster center.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Breakup nearest neighbor distance computation into batches to prevent</span>
+    <span class="c1"># memory blowup in the case of a large number of samples and clusters.</span>
+    <span class="c1"># TODO: Once PR #7383 is merged use check_inputs=False in metric_kwargs.</span>
+    <span class="n">labels</span><span class="p">,</span> <span class="n">mindist</span> <span class="o">=</span> <span class="n">pairwise_distances_argmin_min</span><span class="p">(</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">centers</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span> <span class="n">metric_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;squared&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+    <span class="c1"># cython k-means code assumes int32 inputs</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_samples</span> <span class="o">==</span> <span class="n">distances</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="c1"># distances will be changed in-place</span>
+        <span class="n">distances</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">mindist</span>
+    <span class="n">inertia</span> <span class="o">=</span> <span class="n">mindist</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">inertia</span>
+
+
+<span class="k">def</span> <span class="nf">_labels_inertia</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span>
+                    <span class="n">precompute_distances</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">distances</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;E step of the K-means EM algorithm.</span>
+
+<span class="sd">    Compute the labels and the inertia of the given samples and centers.</span>
+<span class="sd">    This will compute the distances in-place.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : float64 array-like or CSR sparse matrix, shape (n_samples, n_features)</span>
+<span class="sd">        The input samples to assign to the labels.</span>
+
+<span class="sd">    x_squared_norms : array, shape (n_samples,)</span>
+<span class="sd">        Precomputed squared euclidean norm of each data point, to speed up</span>
+<span class="sd">        computations.</span>
+
+<span class="sd">    centers : float array, shape (k, n_features)</span>
+<span class="sd">        The cluster centers.</span>
+
+<span class="sd">    precompute_distances : boolean, default: True</span>
+<span class="sd">        Precompute distances (faster but takes more memory).</span>
+
+<span class="sd">    distances : float array, shape (n_samples,)</span>
+<span class="sd">        Pre-allocated array to be filled in with each sample&#39;s distance</span>
+<span class="sd">        to the closest center.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    labels : int array of shape(n)</span>
+<span class="sd">        The resulting assignment</span>
+
+<span class="sd">    inertia : float</span>
+<span class="sd">        Sum of distances of samples to their closest cluster center.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># set the default value of centers to -1 to be able to detect any anomaly</span>
+    <span class="c1"># easily</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">distances</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="c1"># distances will be changed in-place</span>
+    <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+        <span class="n">inertia</span> <span class="o">=</span> <span class="n">_k_means</span><span class="o">.</span><span class="n">_assign_labels_csr</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">distances</span><span class="o">=</span><span class="n">distances</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">precompute_distances</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_labels_inertia_precompute_dense</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="p">,</span>
+                                                    <span class="n">centers</span><span class="p">,</span> <span class="n">distances</span><span class="p">)</span>
+        <span class="n">inertia</span> <span class="o">=</span> <span class="n">_k_means</span><span class="o">.</span><span class="n">_assign_labels_array</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">distances</span><span class="o">=</span><span class="n">distances</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">inertia</span>
+
+
+<span class="k">def</span> <span class="nf">_init_centroids</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">init_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the initial centroids</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    X : array, shape (n_samples, n_features)</span>
+
+<span class="sd">    k : int</span>
+<span class="sd">        number of centroids</span>
+
+<span class="sd">    init : {&#39;k-means++&#39;, &#39;random&#39; or ndarray or callable} optional</span>
+<span class="sd">        Method for initialization</span>
+
+<span class="sd">    random_state : int, RandomState instance or None, optional, default: None</span>
+<span class="sd">        If int, random_state is the seed used by the random number generator;</span>
+<span class="sd">        If RandomState instance, random_state is the random number generator;</span>
+<span class="sd">        If None, the random number generator is the RandomState instance used</span>
+<span class="sd">        by `np.random`.</span>
+
+<span class="sd">    x_squared_norms :  array, shape (n_samples,), optional</span>
+<span class="sd">        Squared euclidean norm of each data point. Pass it if you have it at</span>
+<span class="sd">        hands already to avoid it being recomputed here. Default: None</span>
+
+<span class="sd">    init_size : int, optional</span>
+<span class="sd">        Number of samples to randomly sample for speeding up the</span>
+<span class="sd">        initialization (sometimes at the expense of accuracy): the</span>
+<span class="sd">        only algorithm is initialized by running a batch KMeans on a</span>
+<span class="sd">        random subset of the data. This needs to be larger than k.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    centers : array, shape(k, n_features)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">random_state</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">x_squared_norms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x_squared_norms</span> <span class="o">=</span> <span class="n">row_norms</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">squared</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">init_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">init_size</span> <span class="o">&lt;</span> <span class="n">n_samples</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">init_size</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;init_size=</span><span class="si">%d</span><span class="s2"> should be larger than k=</span><span class="si">%d</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;Setting it to 3*k&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">init_size</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span>
+                <span class="ne">RuntimeWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">init_size</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">k</span>
+        <span class="n">init_indices</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">init_size</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">init_indices</span><span class="p">]</span>
+        <span class="n">x_squared_norms</span> <span class="o">=</span> <span class="n">x_squared_norms</span><span class="p">[</span><span class="n">init_indices</span><span class="p">]</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">n_samples</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;n_samples=</span><span class="si">%d</span><span class="s2"> should be larger than k=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="n">string_types</span><span class="p">)</span> <span class="ow">and</span> <span class="n">init</span> <span class="o">==</span> <span class="s1">&#39;k-means++&#39;</span><span class="p">:</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="n">_k_init</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+                          <span class="n">x_squared_norms</span><span class="o">=</span><span class="n">x_squared_norms</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="n">string_types</span><span class="p">)</span> <span class="ow">and</span> <span class="n">init</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
+        <span class="n">seeds</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)[:</span><span class="n">k</span><span class="p">]</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">seeds</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="s1">&#39;__array__&#39;</span><span class="p">):</span>
+        <span class="c1"># ensure that the centers have the same dtype as X</span>
+        <span class="c1"># this is a requirement of fused types of cython</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">init</span><span class="p">):</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="n">init</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;the init parameter for the k-means should &quot;</span>
+                         <span class="s2">&quot;be &#39;k-means++&#39; or &#39;random&#39; or an ndarray, &quot;</span>
+                         <span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; (type &#39;</span><span class="si">%s</span><span class="s2">&#39;) was passed.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">init</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">centers</span><span class="p">):</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="n">centers</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+
+    <span class="n">_validate_center_shape</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">centers</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">centers</span>
+
+
+<span class="k">class</span> <span class="nc">KMeans</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClusterMixin</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;K-Means clustering</span>
+
+<span class="sd">    Read more in the :ref:`User Guide &lt;k_means&gt;`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    n_clusters : int, optional, default: 8</span>
+<span class="sd">        The number of clusters to form as well as the number of</span>
+<span class="sd">        centroids to generate.</span>
+
+<span class="sd">    init : {&#39;k-means++&#39;, &#39;random&#39; or an ndarray}</span>
+<span class="sd">        Method for initialization, defaults to &#39;k-means++&#39;:</span>
+
+<span class="sd">        &#39;k-means++&#39; : selects initial cluster centers for k-mean</span>
+<span class="sd">        clustering in a smart way to speed up convergence. See section</span>
+<span class="sd">        Notes in k_init for more details.</span>
+
+<span class="sd">        &#39;random&#39;: choose k observations (rows) at random from data for</span>
+<span class="sd">        the initial centroids.</span>
+
+<span class="sd">        If an ndarray is passed, it should be of shape (n_clusters, n_features)</span>
+<span class="sd">        and gives the initial centers.</span>
+
+<span class="sd">    n_init : int, default: 10</span>
+<span class="sd">        Number of time the k-means algorithm will be run with different</span>
+<span class="sd">        centroid seeds. The final results will be the best output of</span>
+<span class="sd">        n_init consecutive runs in terms of inertia.</span>
+
+<span class="sd">    max_iter : int, default: 300</span>
+<span class="sd">        Maximum number of iterations of the k-means algorithm for a</span>
+<span class="sd">        single run.</span>
+
+<span class="sd">    tol : float, default: 1e-4</span>
+<span class="sd">        Relative tolerance with regards to inertia to declare convergence</span>
+
+<span class="sd">    precompute_distances : {&#39;auto&#39;, True, False}</span>
+<span class="sd">        Precompute distances (faster but takes more memory).</span>
+
+<span class="sd">        &#39;auto&#39; : do not precompute distances if n_samples * n_clusters &gt; 12</span>
+<span class="sd">        million. This corresponds to about 100MB overhead per job using</span>
+<span class="sd">        double precision.</span>
+
+<span class="sd">        True : always precompute distances</span>
+
+<span class="sd">        False : never precompute distances</span>
+
+<span class="sd">    verbose : int, default 0</span>
+<span class="sd">        Verbosity mode.</span>
+
+<span class="sd">    random_state : int, RandomState instance or None, optional, default: None</span>
+<span class="sd">        If int, random_state is the seed used by the random number generator;</span>
+<span class="sd">        If RandomState instance, random_state is the random number generator;</span>
+<span class="sd">        If None, the random number generator is the RandomState instance used</span>
+<span class="sd">        by `np.random`.</span>
+
+<span class="sd">    copy_x : boolean, default True</span>
+<span class="sd">        When pre-computing distances it is more numerically accurate to center</span>
+<span class="sd">        the data first.  If copy_x is True, then the original data is not</span>
+<span class="sd">        modified.  If False, the original data is modified, and put back before</span>
+<span class="sd">        the function returns, but small numerical differences may be introduced</span>
+<span class="sd">        by subtracting and then adding the data mean.</span>
+
+<span class="sd">    n_jobs : int</span>
+<span class="sd">        The number of jobs to use for the computation. This works by computing</span>
+<span class="sd">        each of the n_init runs in parallel.</span>
+
+<span class="sd">        If -1 all CPUs are used. If 1 is given, no parallel computing code is</span>
+<span class="sd">        used at all, which is useful for debugging. For n_jobs below -1,</span>
+<span class="sd">        (n_cpus + 1 + n_jobs) are used. Thus for n_jobs = -2, all CPUs but one</span>
+<span class="sd">        are used.</span>
+
+<span class="sd">    algorithm : &quot;auto&quot;, &quot;full&quot; or &quot;elkan&quot;, default=&quot;auto&quot;</span>
+<span class="sd">        K-means algorithm to use. The classical EM-style algorithm is &quot;full&quot;.</span>
+<span class="sd">        The &quot;elkan&quot; variation is more efficient by using the triangle</span>
+<span class="sd">        inequality, but currently doesn&#39;t support sparse data. &quot;auto&quot; chooses</span>
+<span class="sd">        &quot;elkan&quot; for dense data and &quot;full&quot; for sparse data.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cluster_centers_ : array, [n_clusters, n_features]</span>
+<span class="sd">        Coordinates of cluster centers</span>
+
+<span class="sd">    labels_ :</span>
+<span class="sd">        Labels of each point</span>
+
+<span class="sd">    inertia_ : float</span>
+<span class="sd">        Sum of distances of samples to their closest cluster center.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    &gt;&gt;&gt; from sklearn.cluster import KMeans</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; X = np.array([[1, 2], [1, 4], [1, 0],</span>
+<span class="sd">    ...               [4, 2], [4, 4], [4, 0]])</span>
+<span class="sd">    &gt;&gt;&gt; kmeans = KMeans(n_clusters=2, random_state=0).fit(X)</span>
+<span class="sd">    &gt;&gt;&gt; kmeans.labels_</span>
+<span class="sd">    array([0, 0, 0, 1, 1, 1], dtype=int32)</span>
+<span class="sd">    &gt;&gt;&gt; kmeans.predict([[0, 0], [4, 4]])</span>
+<span class="sd">    array([0, 1], dtype=int32)</span>
+<span class="sd">    &gt;&gt;&gt; kmeans.cluster_centers_</span>
+<span class="sd">    array([[ 1.,  2.],</span>
+<span class="sd">           [ 4.,  2.]])</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    MiniBatchKMeans</span>
+<span class="sd">        Alternative online implementation that does incremental updates</span>
+<span class="sd">        of the centers positions using mini-batches.</span>
+<span class="sd">        For large scale learning (say n_samples &gt; 10k) MiniBatchKMeans is</span>
+<span class="sd">        probably much faster than the default batch implementation.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    ------</span>
+<span class="sd">    The k-means problem is solved using Lloyd&#39;s algorithm.</span>
+
+<span class="sd">    The average complexity is given by O(k n T), were n is the number of</span>
+<span class="sd">    samples and T is the number of iteration.</span>
+
+<span class="sd">    The worst case complexity is given by O(n^(k+2/p)) with</span>
+<span class="sd">    n = n_samples, p = n_features. (D. Arthur and S. Vassilvitskii,</span>
+<span class="sd">    &#39;How slow is the k-means method?&#39; SoCG2006)</span>
+
+<span class="sd">    In practice, the k-means algorithm is very fast (one of the fastest</span>
+<span class="sd">    clustering algorithms available), but it falls in local minima. That&#39;s why</span>
+<span class="sd">    it can be useful to restart it several times.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_clusters</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="s1">&#39;k-means++&#39;</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">precompute_distances</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">copy_x</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_clusters</span> <span class="o">=</span> <span class="n">n_clusters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="n">init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span> <span class="o">=</span> <span class="n">max_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precompute_distances</span> <span class="o">=</span> <span class="n">precompute_distances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_init</span> <span class="o">=</span> <span class="n">n_init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copy_x</span> <span class="o">=</span> <span class="n">copy_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">algorithm</span>
+
+    <span class="k">def</span> <span class="nf">_check_fit_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Verify that the number of samples given is larger than k&quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_clusters</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_samples=</span><span class="si">%d</span><span class="s2"> should be &gt;= n_clusters=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_clusters</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="k">def</span> <span class="nf">_check_test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">FLOAT_DTYPES</span><span class="p">)</span>
+        <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">expected_n_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">n_features</span> <span class="o">==</span> <span class="n">expected_n_features</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Incorrect number of features. &quot;</span>
+                             <span class="s2">&quot;Got </span><span class="si">%d</span><span class="s2"> features, expected </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                                 <span class="n">n_features</span><span class="p">,</span> <span class="n">expected_n_features</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute k-means clustering.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : array-like or sparse matrix, shape=(n_samples, n_features)</span>
+<span class="sd">            Training instances to cluster.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Added to remove scikit-learn internal dependenceies</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute cluster centers and predict cluster index for each sample.</span>
+
+<span class="sd">        Convenience method; equivalent to calling fit(X) followed by</span>
+<span class="sd">        predict(X).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape = [n_samples, n_features]</span>
+<span class="sd">            New data to transform.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        labels : array, shape [n_samples,]</span>
+<span class="sd">            Index of the cluster each sample belongs to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">labels_</span>
+
+    <span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute clustering and transform X to cluster-distance space.</span>
+
+<span class="sd">        Equivalent to fit(X).transform(X), but more efficiently implemented.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape = [n_samples, n_features]</span>
+<span class="sd">            New data to transform.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_new : array, shape [n_samples, k]</span>
+<span class="sd">            X transformed in the new space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Currently, this just skips a copy of the data if it is not in</span>
+        <span class="c1"># np.array or CSR format already.</span>
+        <span class="c1"># XXX This skips _check_test_data, which may change the dtype;</span>
+        <span class="c1"># we should refactor the input validation.</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_fit_data</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transform X to a cluster-distance space.</span>
+
+<span class="sd">        In the new space, each dimension is the distance to the cluster</span>
+<span class="sd">        centers.  Note that even if X is sparse, the array returned by</span>
+<span class="sd">        `transform` will typically be dense.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape = [n_samples, n_features]</span>
+<span class="sd">            New data to transform.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_new : array, shape [n_samples, k]</span>
+<span class="sd">            X transformed in the new space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;cluster_centers_&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_test_data</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;guts of transform method; no input validation&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">euclidean_distances</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict the closest cluster each sample in X belongs to.</span>
+
+<span class="sd">        In the vector quantization literature, `cluster_centers_` is called</span>
+<span class="sd">        the code book and each value returned by `predict` is the index of</span>
+<span class="sd">        the closest code in the code book.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape = [n_samples, n_features]</span>
+<span class="sd">            New data to predict.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        labels : array, shape [n_samples,]</span>
+<span class="sd">            Index of the cluster each sample belongs to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;cluster_centers_&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_test_data</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">x_squared_norms</span> <span class="o">=</span> <span class="n">row_norms</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">squared</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_labels_inertia</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Opposite of the value of X on the K-means objective.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape = [n_samples, n_features]</span>
+<span class="sd">            New data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        score : float</span>
+<span class="sd">            Opposite of the value of X on the K-means objective.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;cluster_centers_&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_test_data</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">x_squared_norms</span> <span class="o">=</span> <span class="n">row_norms</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">squared</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">_labels_inertia</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">k-means-constrained</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Josh Levy-Kramer.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
