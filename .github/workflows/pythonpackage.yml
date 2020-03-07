@@ -12,7 +12,7 @@ on:
 jobs:
   build:
 
-    runs-on: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: windows-latest
     strategy:
       matrix:
         python-version: [3.7]
