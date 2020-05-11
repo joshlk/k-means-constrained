@@ -1,17 +1,5 @@
 
 """
-To build pip tar and distribute to Pypi:
-`k_means_con/bin/activate`
-First test:
-`twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
-Then test install (in new env):
-`pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple`
-Then push to real PyPI:
-`twine upload dist/*`
-
-To compile cython (better to use the compile_cython.py script):
-`python setup.py build_ext`
-
 Based on template: https://github.com/pypa/sampleproject/blob/master/setup.py
 """
 
@@ -37,11 +25,11 @@ cython_options = {"compiler_directives": {"profile": True}, "annotate": True}
 
 setup(
     name='k_means_constrained',
-    version='0.3.1',
+    version='0.3.3',
     description='K-Means clustering constrained with minimum and maximum cluster size',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/joshlk/k-mean-constrained',
+    url='https://github.com/joshlk/k-means-constrained',
     author='Josh Levy-Kramer',
     keywords='kmeans k-means minimum maximum cluster segmentation size',
     packages=find_packages(),
