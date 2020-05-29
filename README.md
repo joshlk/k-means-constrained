@@ -19,7 +19,7 @@ The original Minimum Cost Flow (MCF) network proposed by Bradley et al.
 has been modified so maximum cluster sizes can also be specified along
 with minimum cluster size. 
 
-The code is based on [scikit-lean's `KMeans`](http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)
+The code is based on [scikit-lean's `KMeans`](https://scikit-learn.org/0.19/modules/generated/sklearn.cluster.KMeans.html)
 and implements the same API with modifications.
 
 Ref:
