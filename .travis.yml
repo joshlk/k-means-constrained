@@ -4,7 +4,7 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements-dev.txt
-  - python compile_cython.py
+  - pip install .
 # command to run tests
 script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
