@@ -1,3 +1,2 @@
 pytest >= 5.1
-setuptools >= 30
 cython >= 0.29
