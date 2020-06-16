@@ -1,13 +1,10 @@
 .PHONY: build dist redist install install-from-source clean uninstall venv-create venv-activate
 
 build:
-	CYTHONIZE=1 python setup.py build
+	CYTHONIZE=1 ./setup.py build
 
 dist:
-	CYTHONIZE=1 python setup.py sdist bdist_wheel
-
-compile:
-	CYTHONIZE=1 python setup.py build_ext --inplace
+	CYTHONIZE=1 ./setup.py sdist bdist_wheel
 
 redist: clean dist
 
