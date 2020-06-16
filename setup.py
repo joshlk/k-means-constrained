@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """
 Based on template: https://github.com/FedericoStra/cython-package-example
