@@ -1,4 +1,4 @@
-![PyPI](https://img.shields.io/pypi/v/k-means-constrained)
+[![PyPI](https://img.shields.io/pypi/v/k-means-constrained)](https://pypi.org/project/k-means-constrained/)
 ![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
 [![Build Status](https://travis-ci.com/joshlk/k-means-constrained.svg?branch=master)](https://travis-ci.com/joshlk/k-means-constrained)
 [API Documentation](https://joshlk.github.io/k-means-constrained/)
