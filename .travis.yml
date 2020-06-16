@@ -8,8 +8,7 @@ install:
   - pip install --upgrade pip setuptools
   - pip install -r requirements-dev.txt
   - pip install -r requirements.txt
-  - CYTHONIZE=1 python setup.py build
-  - pip install .
+  - CYTHONIZE=1 python setup.py build_ext --inplace
 # command to run tests
 script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
