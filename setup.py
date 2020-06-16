@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 """
 Based on template: https://github.com/FedericoStra/cython-package-example
@@ -68,5 +68,4 @@ setup(
         "dev": dev_requires,
         "docs": ["sphinx", "sphinx-rtd-theme"]
     },
-    package_dir={'sklearn_cluster': ''},
 )
