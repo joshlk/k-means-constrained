@@ -7,7 +7,7 @@ python:
 install:
   - pip install --upgrade pip
   - pip uninstall -y setuptools
-  - pip install -y setuptools
+  - pip install setuptools
   - pip install -r requirements-dev.txt
   - pip install -r requirements.txt
   - CYTHONIZE=1 ./setup.py build
