@@ -68,4 +68,5 @@ setup(
         "dev": dev_requires,
         "docs": ["sphinx", "sphinx-rtd-theme"]
     },
+    package_dir={'sklearn_cluster': ''},
 )
