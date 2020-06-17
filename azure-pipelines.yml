@@ -46,7 +46,7 @@ steps:
   displayName: 'Use Python $(PYTHON_VERSION)'
 
 - script: |
-    python -m pip install --upgrade pip setuptools wheel
+    python -m pip install --upgrade pip setuptools wheel twine
   displayName: 'Install dependencies'
 
 - script: |
