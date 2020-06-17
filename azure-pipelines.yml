@@ -60,13 +60,22 @@ steps:
     targetPath: 'dist'
 
 # Test artifact
-- script: |
+# Linux or MacOS
+- bash: |
     cd k_means_constrained
     pip install -r ../requirements-dev.txt
     pip install ../dist/*.whl
     pytest ../tests
+  #condition: or( eq( variables['Agent.OS'], 'Linux' ), eq( variables['Agent.OS'], 'Darwin' ) )
   displayName: 'Install wheel and test'
-
+## Windows
+#- bash: |
+#    cd k_means_constrained
+#    pip install -r ../requirements-dev.txt
+#    pip install ..\dist\*.whl
+#    pytest ../tests
+#  condition: eq( variables['Agent.OS'], 'Windows_NT' )
+#  displayName: 'Install wheel and test'
 
 
 
