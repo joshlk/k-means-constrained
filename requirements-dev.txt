@@ -1,3 +1,5 @@
+wheel
+setuptools
 pytest>=5.1
 cython>=0.29
 pandas>=1.0.4

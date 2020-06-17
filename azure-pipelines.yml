@@ -24,11 +24,11 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-    python -m pip install --upgrade pip
+    python -m pip install --upgrade pip setuptools wheel
   displayName: 'Install dependencies'
 
 - script: |
-    python setup.py build sdist
+    python setup.py build bdist_wheel
   displayName: 'build wheel and sdist'
 
 # Publish pipeline artifacts

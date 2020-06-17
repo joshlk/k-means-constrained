@@ -1,18 +1,21 @@
-.PHONY: build dist redist install install-from-source clean uninstall venv-create venv-activate check-dist test-pypi pypi-upload
+.PHONY: build dist redist install dist-no-cython install-from-source clean uninstall venv-create venv-activate check-dist test-pypi pypi-upload
 
 build:
-	CYTHONIZE=1 python setup.py build
+	python setup.py build
 
 dist:
-	CYTHONIZE=1 python setup.py build sdist
+	python setup.py build bdist_wheel
+
+dist-no-cython:
+	CYTHONIZE=0 python setup.py build bdist_wheel
 
 compile:
-	CYTHONIZE=1 python setup.py build build_ext --inplace
+	python setup.py build build_ext --inplace
 
 redist: clean dist
 
 install:
-	CYTHONIZE=1 pip install .
+	pip install .
 
 install-from-source: dist
 	pip install dist/k-means-constrained-0.4.0.tar.gz
@@ -40,7 +43,6 @@ check-dist:
 
 test-pypi:
 	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-
 
 pypi-upload:
 	twine upload dist/*
