@@ -59,20 +59,22 @@ steps:
 # Test wheel
 # Use bash for all platforms including Windows
 - bash: |
-    cd k_means_constrained
-    pip install -r ../requirements-dev.txt
-    pip install ../dist/*.whl
-    pytest ../tests
+    cd $(mktemp -d)  # change to tempory directory
+    pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
+    pip install $(System.DefaultWorkingDirectory)/dist/*.whl
+    pytest $(System.DefaultWorkingDirectory)/tests
+    pip uninstall -y k-means-constrained
   displayName: 'Install wheel and test'
 
 # Test source distribution (sdist)
 # Use bash for all platforms including Windows
 - bash: |
-    cd k_means_constrained
-    pip install -r ../requirements-dev.txt
-    pip install ../dist/*.tar.gz
-    pytest ../tests
-  displayName: 'Install sdist and test'
+    cd $(mktemp -d)  # change to tempory directory
+    pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
+    pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
+    pytest $(System.DefaultWorkingDirectory)/tests
+    pip uninstall -y k-means-constrained
+  displayName: 'Compile sdist, install and test'
 
 
 
