@@ -1,0 +1,43 @@
+variables:
+- name: CIBW_BUILD
+  value: cp36-*_x86_64 cp37-*_x86_64 cp38-*_x86_64
+- name: CIBW_BEFORE_TEST
+  value: pip install -r requirements-dev.txt
+- name: CIBW_TEST_COMMAND
+  value: pytest {package}/tests
+
+jobs:
+- job: linux
+  pool: {vmImage: 'Ubuntu-16.04'}
+  steps:
+    - task: UsePythonVersion@0
+    - bash: |
+        python3 -m pip install --upgrade pip
+        pip3 install cibuildwheel==1.4.2
+        cibuildwheel --output-dir wheelhouse .
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: 'wheelhouse'}
+
+- job: macos
+  pool: {vmImage: 'macOS-10.15'}
+  steps:
+    - task: UsePythonVersion@0
+    - bash: |
+        python3 -m pip install --upgrade pip
+        pip3 install cibuildwheel==1.4.2
+        cibuildwheel --output-dir wheelhouse .
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: 'wheelhouse'}
+
+- job: windows
+  pool: {vmImage: 'vs2017-win2016'}
+  steps:
+    - task: UsePythonVersion@0
+    - script: choco install vcpython27 -f -y
+      displayName: Install Visual C++ for Python 2.7
+    - bash: |
+        python -m pip install --upgrade pip
+        pip install cibuildwheel==1.4.2
+        cibuildwheel --output-dir wheelhouse .
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: 'wheelhouse'}
