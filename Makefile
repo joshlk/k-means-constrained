@@ -15,7 +15,7 @@ install:
 	CYTHONIZE=1 pip install .
 
 install-from-source: dist
-	pip install dist/k-means-constrained-0.3.3.tar.gz
+	pip install dist/k-means-constrained-0.4.0.tar.gz
 
 clean:
 	$(RM) -r build dist src/*.egg-info
