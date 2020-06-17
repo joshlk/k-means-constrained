@@ -21,6 +21,7 @@ except:
 try:
     from Cython.Build import cythonize
 except ImportError:
+    print("! Could not import Cython !")
     cythonize = None
 
 
@@ -43,8 +44,12 @@ def no_cythonize(extensions, **_ignore):
 extensions = [
     Extension("k_means_constrained.mincostflow_vectorized_", ["k_means_constrained/mincostflow_vectorized_.pyx"],
               include_dirs=[get_include()]),
-    Extension("k_means_constrained.sklearn_cluster._k_means", ["k_means_constrained/sklearn_cluster/_k_means.pyx"],
+    Extension("k_means_constrained.sklearn_import.cluster._k_means", ["k_means_constrained/sklearn_import/cluster/_k_means.pyx"],
               include_dirs=[get_include()]),
+    Extension("k_means_constrained.sklearn_import.metrics.pairwise_fast", ["k_means_constrained/sklearn_import/metrics/pairwise_fast.pyx"],
+                  include_dirs=[get_include()]),
+    Extension("k_means_constrained.sklearn_import.utils.sparsefuncs_fast", ["k_means_constrained/sklearn_import/utils/sparsefuncs_fast.pyx"],
+                      include_dirs=[get_include()]),
 ]
 
 CYTHONIZE = bool(int(os.getenv("CYTHONIZE", 0))) and cythonize is not None
@@ -68,5 +73,8 @@ setup(
         "dev": dev_requires,
         "docs": ["sphinx", "sphinx-rtd-theme"]
     },
-    package_dir={'sklearn_cluster': ''},
+    package_dir={
+        'k_means_constrained': 'k_means_constrained',
+        'sklearn_import': 'k_means_constrained/sklearn_import'
+    },
 )

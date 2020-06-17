@@ -7,7 +7,7 @@ dist:
 	CYTHONIZE=1 python setup.py sdist bdist_wheel
 
 compile:
-	CYTHONIZE=1 python setup.py build_ext --inplace
+	CYTHONIZE=1 python setup.py build build_ext --inplace
 
 redist: clean dist
 
@@ -28,6 +28,8 @@ uninstall:
 
 venv-create:
 	python -m venv k-means-env
+	pip install -r requirements.txt
+	pip install pytest
 
 venv-activate:
 	# Doesn't work. Need to execute manually

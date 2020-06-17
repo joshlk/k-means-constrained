@@ -1,19 +1,22 @@
 #!/usr/bin/env python
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 from numpy.testing import assert_array_equal, assert_almost_equal
-from sklearn import datasets
+from scipy.sparse import csc_matrix, issparse
 
-from sklearn.metrics import euclidean_distances
-from sklearn.utils.extmath import row_norms
-from sklearn.cluster.k_means_ import KMeans, _labels_inertia
-
-from k_means_constrained.sklearn_cluster.k_means_ import KMeans
+from k_means_constrained.sklearn_import.metrics.pairwise import euclidean_distances
+from k_means_constrained.sklearn_import.utils.extmath import row_norms
 
 from k_means_constrained.k_means_constrained_ import minimum_cost_flow_problem_graph, solve_min_cost_flow_graph, \
     KMeansConstrained, _labels_constrained
+
+
+# External sklearn import
+from sklearn.cluster import KMeans
+from sklearn.cluster.k_means_ import _labels_inertia
+from sklearn import datasets
 
 
 def sort_coordinates(array):
@@ -145,6 +148,7 @@ def test__labels_constrained_kmeans_parity():
     assert inertia_constrained == inertia_kmeans
 
 
+
 def test_KMeansConstrained():
     X = np.array([
         [0, 0],
@@ -256,3 +260,28 @@ def test_KMeansConstrained_performance():
                             verbose=False, random_state=seed, copy_x=True, n_jobs=1)
     y = clf.fit_predict(X)
     # time = timeit('y = clf.fit_predict(X)', number=1, globals=globals())
+
+
+def test_spare_not_implemented():
+    X, _ = datasets.make_blobs(n_samples=100, n_features=5, centers=10, random_state=1)
+
+    issparse(X)
+
+    n_jobs = -1
+    k = 20
+    size_min, size_max = 3, 40
+
+    clf = KMeansConstrained(
+        n_clusters=k,
+        size_min=size_min,
+        size_max=size_max,
+        n_jobs=n_jobs
+    )
+
+    X = csc_matrix(X)
+
+    with pytest.raises(NotImplementedError):
+        clf.fit(X)
+
+    with pytest.raises(NotImplementedError):
+        clf.fit_predict(X)

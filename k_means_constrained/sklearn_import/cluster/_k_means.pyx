@@ -13,7 +13,7 @@ cimport numpy as np
 cimport cython
 from cython cimport floating
 
-from sklearn.utils.sparsefuncs_fast import assign_rows_csr
+from k_means_constrained.sklearn_import.utils.sparsefuncs_fast import assign_rows_csr
 
 ctypedef np.float64_t DOUBLE
 ctypedef np.int32_t INT
@@ -23,7 +23,6 @@ ctypedef floating (*DOT)(int N, floating *X, int incX, floating *Y,
 
 
 np.import_array()
-
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
