@@ -72,7 +72,7 @@ steps:
     pip install -r ../requirements-dev.txt
     pip install ../dist/*.tar.gz
     pytest ../tests
-  displayName: 'Install wheel and test'
+  displayName: 'Install sdist and test'
 
 
 
