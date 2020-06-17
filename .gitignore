@@ -165,7 +165,12 @@ fabric.properties
 out
 gen
 /k_means_constrained/mincostflow_vectorized_.c
-/k_means_constrained/sklearn_cluster/_k_means.c
+/k_means_constrained/sklearn_import/cluster/_k_means.c
 /docs_source/_build/
 
 k-means-env/*
+/k_means_constrained/sklearn_import/metrics/pairwise_fast.c
+/k_means_constrained/sklearn_import/utils/sparsefuncs_fast.c
+
+.DS_Store
+.DS_Store/*

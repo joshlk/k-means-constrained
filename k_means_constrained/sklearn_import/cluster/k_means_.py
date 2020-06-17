@@ -15,18 +15,15 @@ import warnings
 
 import numpy as np
 import scipy.sparse as sp
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
-from sklearn.externals.six import string_types
-from sklearn.metrics.pairwise import euclidean_distances
-from sklearn.metrics.pairwise import pairwise_distances_argmin_min
-from sklearn.utils import check_array
-from sklearn.utils import check_random_state
-from sklearn.utils.extmath import row_norms, stable_cumsum
-from sklearn.utils.sparsefuncs import mean_variance_axis
-from sklearn.utils.validation import FLOAT_DTYPES
-from sklearn.utils.validation import check_is_fitted
+from k_means_constrained.sklearn_import.base import BaseEstimator, ClusterMixin, TransformerMixin
+from six import string_types
+from k_means_constrained.sklearn_import.metrics.pairwise import euclidean_distances, pairwise_distances_argmin_min
+from k_means_constrained.sklearn_import.utils.validation import check_array, check_random_state, FLOAT_DTYPES, \
+    check_is_fitted
+from k_means_constrained.sklearn_import.utils.extmath import row_norms, stable_cumsum
+from k_means_constrained.sklearn_import.utils.sparsefuncs import mean_variance_axis
 
-from . import _k_means
+from k_means_constrained.sklearn_import.cluster import _k_means
 
 
 ###############################################################################

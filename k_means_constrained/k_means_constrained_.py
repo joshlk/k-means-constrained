@@ -15,19 +15,15 @@
 import warnings
 import numpy as np
 import scipy.sparse as sp
-from sklearn.metrics.pairwise import euclidean_distances
-from sklearn.utils.extmath import row_norms, squared_norm, cartesian
-from sklearn.utils import check_array
-from sklearn.utils import check_random_state
-from sklearn.utils import as_float_array
+from .sklearn_import.metrics.pairwise import euclidean_distances
+from .sklearn_import.utils.extmath import row_norms, squared_norm, cartesian
+from .sklearn_import.utils.validation import check_array, check_random_state, as_float_array
 from joblib import Parallel
 from joblib import delayed
 
 # Internal scikit learn methods imported into this project
-from .sklearn_cluster._k_means import _centers_dense, _centers_sparse
-from .sklearn_cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, _init_centroids
-
-from ortools.graph import pywrapgraph
+from k_means_constrained.sklearn_import.cluster._k_means import _centers_dense, _centers_sparse
+from k_means_constrained.sklearn_import.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, _init_centroids
 
 from k_means_constrained.mincostflow_vectorized import SimpleMinCostFlowVectorized
 
@@ -42,7 +38,7 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
 
     Parameters
     ----------
-    X : array-like or sparse matrix, shape (n_samples, n_features)
+    X : array-like, shape (n_samples, n_features)
         The observations to cluster.
 
     size_min : int, optional, default: None
@@ -130,6 +126,9 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
         Returned only if `return_n_iter` is set to True.
 
     """
+    if sp.issparse(X):
+        raise NotImplementedError("Not implemented for sparse X")
+
     if n_init <= 0:
         raise ValueError("Invalid number of initializations."
                          " n_init=%d must be bigger than zero." % n_init)
@@ -288,6 +287,9 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
     n_iter : int
         Number of iterations run.
     """
+    if sp.issparse(X):
+        raise NotImplementedError("Not implemented for sparse X")
+
     random_state = check_random_state(random_state)
     n_samples = X.shape[0]
 
@@ -613,12 +615,15 @@ class KMeansConstrained(KMeans):
 
         Parameters
         ----------
-        X : array-like or sparse matrix, shape=(n_samples, n_features)
+        X : array-like, shape=(n_samples, n_features)
             Training instances to cluster.
 
         y : Ignored
 
         """
+        if sp.issparse(X):
+            raise NotImplementedError("Not implemented for sparse X")
+
         random_state = check_random_state(self.random_state)
         X = self._check_fit_data(X)
 
