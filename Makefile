@@ -1,4 +1,4 @@
-.PHONY: build dist redist install install-from-source clean uninstall venv-create venv-activate
+.PHONY: build dist redist install install-from-source clean uninstall venv-create venv-activate check-dist test-pypi pypi-upload
 
 build:
 	CYTHONIZE=1 python setup.py build
@@ -29,8 +29,20 @@ uninstall:
 venv-create:
 	python -m venv k-means-env
 	pip install -r requirements.txt
-	pip install pytest
+	pip install -r requirements-dev.txt
 
 venv-activate:
 	# Doesn't work. Need to execute manually
 	source k-means-env/bin/activate
+
+check-dist:
+	twine check dist/*
+
+test-pypi:
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+
+pypi-upload:
+	twine upload dist/*
+
+
