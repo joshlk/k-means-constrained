@@ -1,52 +1,74 @@
-# From: https://cibuildwheel.readthedocs.io/en/stable/setup/#azure-pipelines
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
-variables:
-- name: CIBW_BUILD
-  value: cp36-*_x86_64 cp37-*_x86_64 cp38-*_x86_64
-#- name: CIBW_BEFORE_TEST
-#  value: pip install -r requirements-dev.txt
-#- name: CIBW_TEST_COMMAND
-#  value: pytest {package}/tests
+trigger:
+- master
+
+strategy:
+  matrix:
+    Linux_Python36:
+      IMAGE_NAME: 'ubuntu-16.04'
+      PYTHON_VERSION: '3.6'
+    Linux_Python37:
+      IMAGE_NAME: 'ubuntu-16.04'
+      PYTHON_VERSION: '3.7'
+    Linux_Python38:
+      IMAGE_NAME: 'ubuntu-16.04'
+      PYTHON_VERSION: '3.8'
+    Windows_Python36:
+      IMAGE_NAME: 'vs2017-win2016'
+      PYTHON_VERSION: '3.6'
+    Windows_Python37:
+      IMAGE_NAME: 'vs2017-win2016'
+      PYTHON_VERSION: '3.7'
+    Windows_Python38:
+      IMAGE_NAME: 'vs2017-win2016'
+      PYTHON_VERSION: '3.8'
+    MacOS_Python36:
+      IMAGE_NAME: 'macos-10.14'
+      PYTHON_VERSION: '3.6'
+    MacOS_Python37:
+      IMAGE_NAME: 'macos-10.14'
+      PYTHON_VERSION: '3.7'
+    MacOS_Python38:
+      IMAGE_NAME: 'macos-10.14'
+      PYTHON_VERSION: '3.8'
+
+pool:
+  vmImage: $(IMAGE_NAME)
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(PYTHON_VERSION)'
+  displayName: 'Use Python $(PYTHON_VERSION)'
+
+- script: |
+    python -m pip install --upgrade pip setuptools wheel twine
+  displayName: 'Install dependencies'
+
+- script: |
+    python setup.py build bdist_wheel sdist
+  displayName: 'build wheel and sdist'
+
+# Publish pipeline artifacts
+# Publish (upload) a file or directory as a named artifact for the current run
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: 'dist'
+
+# Test artifact
+- script: |
+    cd k_means_constrained
+    pip install -r ../requirements-dev.txt
+    pip install ../dist/*.whl
+    pytest ../tests
+  displayName: 'Install wheel and test'
 
 
-jobs:
-- job: macos
-  pool: {vmImage: 'macOS-10.15'}
-  steps:
-    - task: UsePythonVersion@0
-    - bash: |
-        python3 -m pip install --upgrade pip
-        pip3 install cibuildwheel==1.4.2
-        cibuildwheel --output-dir wheelhouse .
-    - task: PublishBuildArtifacts@1
-      inputs: {pathtoPublish: 'wheelhouse'}
-    - bash: |
-        python -c "from k_means_constrained import KMeansConstrained; import numpy as np; clf=KMeansConstrained(1,1,1);clf.fit(np.array([[0,0]]));"
-
-#- job: linux
-#  pool: {vmImage: 'Ubuntu-16.04'}
-#  steps:
-#    - task: UsePythonVersion@0
-#    - bash: |
-#        python3 -m pip install --upgrade pip
-#        pip3 install cibuildwheel==1.4.2
-#        cibuildwheel --output-dir wheelhouse .
-#    - task: PublishBuildArtifacts@1
-#      inputs: {pathtoPublish: 'wheelhouse'}
-#    - bash: |
-#        python -c "from k_means_constrained import KMeansConstrained; import numpy as np; clf=KMeansConstrained(1,1,1);clf.fit(np.array([[0,0]]));"
 
 
-#
-#- job: windows
-#  pool: {vmImage: 'vs2017-win2016'}
-#  steps:
-#    - task: UsePythonVersion@0
-#    - script: choco install vcpython27 -f -y
-#      displayName: Install Visual C++ for Python 2.7
-#    - bash: |
-#        python -m pip install --upgrade pip
-#        pip install cibuildwheel==1.4.2
-#        cibuildwheel --output-dir wheelhouse .
-#    - task: PublishBuildArtifacts@1
-#      inputs: {pathtoPublish: 'wheelhouse'}
+
+
