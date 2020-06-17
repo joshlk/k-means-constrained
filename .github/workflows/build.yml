@@ -8,8 +8,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CIBW_BUILD: cp36-*_x86_64 cp37-*_x86_64 cp38-*_x86_64
-      CIBW_BEFORE_TEST: pip install -r requirements-dev.txt
-      CIBW_TEST_COMMAND: pytest {package}/tests
+#      CIBW_BEFORE_TEST: pip install -r requirements-dev.txt
+#      CIBW_TEST_COMMAND: pytest {package}/tests
     strategy:
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-latest]
