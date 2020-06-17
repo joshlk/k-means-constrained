@@ -1,10 +1,14 @@
 language: python
 python:
+  - "3.6"
   - "3.7"
+  - "3.8"
 # command to install dependencies
 install:
-  - pip install -r requirements_tests.txt
-  - python compile_cython.py
+  - pip install --upgrade pip setuptools
+  - pip install -r requirements-dev.txt
+  - pip install -r requirements.txt
+  - CYTHONIZE=1 python setup.py build_ext --inplace
 # command to run tests
 script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
