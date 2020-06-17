@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-import pytest
-
 import numpy as np
-from numpy.testing import assert_array_equal, assert_almost_equal
+from numpy.testing import assert_array_equal
 from ortools.graph.pywrapgraph import SimpleMinCostFlow
-from sklearn.metrics import euclidean_distances
+from k_means_constrained.sklearn_import.metrics.pairwise import euclidean_distances
 
 from k_means_constrained.k_means_constrained_ import minimum_cost_flow_problem_graph
 from k_means_constrained.mincostflow_vectorized import SimpleMinCostFlowVectorized
