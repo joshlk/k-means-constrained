@@ -8,6 +8,7 @@ from k_means_constrained.sklearn_import.metrics.pairwise import euclidean_distan
 from k_means_constrained.k_means_constrained_ import minimum_cost_flow_problem_graph
 from k_means_constrained.mincostflow_vectorized import SimpleMinCostFlowVectorized
 
+
 def test_SimpleMinCostFlowVectorized_equivalence():
     # Setup graph
     X = np.array([
