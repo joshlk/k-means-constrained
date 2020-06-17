@@ -6,8 +6,6 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
 strategy:
   matrix:
     Linux_Python36:
@@ -37,6 +35,9 @@ strategy:
     MacOS_Python38:
       VM_IMAGE: 'macos-10.14'
       PYTHON_VERSION: '3.8'
+
+pool:
+  vmImage: $(imageName)
 
 steps:
 - task: UsePythonVersion@0
