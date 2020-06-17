@@ -3,6 +3,12 @@
 Requires: `pip install twine`
 Don't forget to increment version number
 
+Bump verions (major, minor or micro):
+
+```shell script
+bump2version minor
+```
+
 Activate virtual env (might need to `make venv-create`)
 
 ```shell script
