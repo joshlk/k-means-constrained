@@ -4,7 +4,7 @@ build:
 	python setup.py build
 
 dist:
-	python setup.py build bdist_wheel
+	python setup.py build bdist_wheel sdist
 
 dist-no-cython:
 	CYTHONIZE=0 python setup.py build bdist_wheel
