@@ -52,7 +52,7 @@ extensions = [
                       include_dirs=[get_include()]),
 ]
 
-CYTHONIZE = bool(int(os.getenv("CYTHONIZE", 0))) and cythonize is not None
+CYTHONIZE = bool(int(os.getenv("CYTHONIZE", 1))) and cythonize is not None
 
 if CYTHONIZE:
     compiler_directives = {"language_level": 3, "embedsignature": True}

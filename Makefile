@@ -4,7 +4,7 @@ build:
 	CYTHONIZE=1 python setup.py build
 
 dist:
-	CYTHONIZE=1 python setup.py sdist bdist_wheel
+	CYTHONIZE=1 python setup.py build sdist
 
 compile:
 	CYTHONIZE=1 python setup.py build build_ext --inplace

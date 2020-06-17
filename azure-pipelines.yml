@@ -28,7 +28,7 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    python setup.py sdist bdist_wheel
+    CYTHONIZE=1 python setup.py build sdist
   displayName: 'build wheel and sdist'
 
 # Publish pipeline artifacts
