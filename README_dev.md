@@ -6,7 +6,7 @@ Don't forget to increment version number
 Bump version (major, minor or micro):
 
 ```shell script
-bump2version minor
+bump2version micro
 ```
 
 Commit to master and get build-id from Azure Pipeline URL:

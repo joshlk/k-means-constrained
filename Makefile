@@ -53,6 +53,7 @@ download-dists:
 		| wget --content-disposition -P dist -i -
 	unzip -j -o -d dist dist/\*.zip
 	rm dist/*.zip
+	rm dist/*linux*.whl  # Exclude Linux wheels as would need to build manylinux which is difficult. Linux is ok to compile from source
 
 check-dist:
 	twine check dist/*
