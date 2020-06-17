@@ -1,6 +1,7 @@
-![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)]
-[![Build Status](https://travis-ci.com/joshlk/k-mean-constrained.svg?branch=master)](https://travis-ci.com/joshlk/k-mean-constrained)
-
+[![PyPI](https://img.shields.io/pypi/v/k-means-constrained)](https://pypi.org/project/k-means-constrained/)
+![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
+[![Build Status](https://travis-ci.com/joshlk/k-means-constrained.svg?branch=master)](https://travis-ci.com/joshlk/k-means-constrained)
+[API Documentation](https://joshlk.github.io/k-means-constrained/)
 
 # k-means-constrained
 K-means clustering implementation whereby a minimum and/or maximum size for each
@@ -18,13 +19,22 @@ The original Minimum Cost Flow (MCF) network proposed by Bradley et al.
 has been modified so maximum cluster sizes can also be specified along
 with minimum cluster size. 
 
-The code is based on [scikit-lean's `KMeans`](http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)
+The code is based on [scikit-lean's `KMeans`](https://scikit-learn.org/0.19/modules/generated/sklearn.cluster.KMeans.html)
 and implements the same API with modifications.
 
 Ref:
 1. [Bradley, P. S., K. P. Bennett, and Ayhan Demiriz. "Constrained k-means clustering."
     Microsoft Research, Redmond (2000): 1-8.](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2000-65.pdf)
 2. [Google's SimpleMinCostFlow C++ implementation](https://github.com/google/or-tools/blob/master/ortools/graph/min_cost_flow.h)
+
+# Installation
+You can install the k-means-constrained from PyPI:
+
+```
+pip install k-means-constrained
+```
+
+It is suported on Python 3.6 and above.
 
 # Example
 ```python
@@ -47,18 +57,4 @@ array([[ 1.,  2.],
 array([0, 1], dtype=int32)
 ```
 
-# Installation
-Requires [Google's OR-tools to be installed](https://developers.google.com/optimization/introduction/installing/binary).
-
-Currently tested with:
-* scikit-learn == 0.19.1
-* ortools == 6.7.4973
-
-As this package uses internal scikit learn methods associated with k-means
-it may break with other versions of scikit-learn. This can be addressed
-in the future by importing the internal methods into this project.
-
-# TODO:
-- [ ] Documentation
-- [ ] Test with sparse `X`
-- [ ] Remove dependencies on internal scikit learn methods by importing them into this project
+For more details see [API Documentation](https://joshlk.github.io/k-means-constrained/).

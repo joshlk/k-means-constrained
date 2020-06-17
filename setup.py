@@ -1,70 +1,72 @@
+#!/usr/bin/env python3
 
 """
-To build pip tar:
-`python setup.py sdist`
-
-To compile cython (better to use the compile_cython.py script):
-`python setup.py build_ext`
-
-Based on template: https://github.com/pypa/sampleproject/blob/master/setup.py
+Based on template: https://github.com/FedericoStra/cython-package-example
 """
 
-from setuptools import setup, find_packages
-from pip.req import parse_requirements
-from codecs import open # To use a consistent encoding
-from os import path
-from Cython.Build import cythonize
-import numpy as np
+from setuptools import dist
+dist.Distribution().fetch_build_eggs(["cython>=0.29", "numpy>=1.13"])
 
-here = path.abspath(path.dirname(__file__))
+import os
+from setuptools import setup, Extension
 
-# Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+try:
+    from numpy import get_include
+except:
+    def get_include():
+        # Defer import to later
+        from numpy import get_include
+        return get_include()
 
-install_requires = parse_requirements('requirements.txt', session=False)
+try:
+    from Cython.Build import cythonize
+except ImportError:
+    cythonize = None
 
-# Profile cython and output html with annotation
-cython_options = {"compiler_directives": {"profile": True}, "annotate": True}
+
+# https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html#distributing-cython-modules
+def no_cythonize(extensions, **_ignore):
+    for extension in extensions:
+        sources = []
+        for sfile in extension.sources:
+            path, ext = os.path.splitext(sfile)
+            if ext in (".pyx", ".py"):
+                if extension.language == "c++":
+                    ext = ".cpp"
+                else:
+                    ext = ".c"
+                sfile = path + ext
+            sources.append(sfile)
+        extension.sources[:] = sources
+    return extensions
+
+extensions = [
+    Extension("k_means_constrained.mincostflow_vectorized_", ["k_means_constrained/mincostflow_vectorized_.pyx"],
+              include_dirs=[get_include()]),
+    Extension("k_means_constrained.sklearn_cluster._k_means", ["k_means_constrained/sklearn_cluster/_k_means.pyx"],
+              include_dirs=[get_include()]),
+]
+
+CYTHONIZE = bool(int(os.getenv("CYTHONIZE", 0))) and cythonize is not None
+
+if CYTHONIZE:
+    compiler_directives = {"language_level": 3, "embedsignature": True}
+    extensions = cythonize(extensions, compiler_directives=compiler_directives)
+else:
+    extensions = no_cythonize(extensions)
+
+with open("requirements.txt") as fp:
+    install_requires = fp.read().strip().split("\n")
+
+with open("requirements-dev.txt") as fp:
+    dev_requires = fp.read().strip().split("\n")
 
 setup(
-    name='k_means_constrained',
-    version='0.2.0',
-    description='K-Means clustering constrained with minimum and maximum cluster size',
-    long_description=long_description,
-    long_description_content_type='text/markdown',
-    url='https://github.com/outrauk/k_means_constrained',
-    author='Josh Levy-Kramer @ Outra',
-    author_email='josh@outra.co.uk',
-    keywords='kmeans k-means minimum maximum cluster segmentation size',
-    packages=find_packages(),
-    install_requires=[str(e.req) for e in install_requires],
-
-    # Classifiers help users find your project by categorizing it.
-    #
-    # For a list of valid classifiers, see
-    # https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers=[  # Optional
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
-
-        # Indicate who your project is intended for
-        'Intended Audience :: Developers',
-        'Topic :: Scientific/Engineering',
-
-        # Pick your license as you wish
-        'License :: OSI Approved :: BSD License',
-
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
-    ],
-
-    # For cython
-    ext_modules=cythonize("k_means_constrained/mincostflow_vectorized_.pyx", **cython_options),
-    include_dirs=[np.get_include()]
+    ext_modules=extensions,
+    install_requires=install_requires,
+    extras_require={
+        "dev": dev_requires,
+        "docs": ["sphinx", "sphinx-rtd-theme"]
+    },
+    package_dir={'sklearn_cluster': ''},
 )

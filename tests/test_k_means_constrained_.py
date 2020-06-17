@@ -256,23 +256,3 @@ def test_KMeansConstrained_performance():
                             verbose=False, random_state=seed, copy_x=True, n_jobs=1)
     y = clf.fit_predict(X)
     # time = timeit('y = clf.fit_predict(X)', number=1, globals=globals())
-
-
-from sklearn import datasets
-from sklearn.cluster import KMeans
-import pandas as pd
-
-iris = datasets.load_iris()
-X = iris.data
-k = 8
-random_state = 1
-
-clf_kmeans = KMeans(
-    n_clusters=k,
-    random_state=random_state,
-    algorithm='full'
-)
-y = clf_kmeans.fit_predict(X)
-
-# Count number of data points for each cluster and sort
-ndp = pd.Series(y).value_counts().values
