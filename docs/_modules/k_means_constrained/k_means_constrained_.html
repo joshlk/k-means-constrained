@@ -48,19 +48,15 @@
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.sparse</span> <span class="k">as</span> <span class="nn">sp</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics.pairwise</span> <span class="k">import</span> <span class="n">euclidean_distances</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils.extmath</span> <span class="k">import</span> <span class="n">row_norms</span><span class="p">,</span> <span class="n">squared_norm</span><span class="p">,</span> <span class="n">cartesian</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">check_array</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">check_random_state</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">as_float_array</span>
-<span class="kn">from</span> <span class="nn">sklearn.externals.joblib</span> <span class="k">import</span> <span class="n">Parallel</span>
-<span class="kn">from</span> <span class="nn">sklearn.externals.joblib</span> <span class="k">import</span> <span class="n">delayed</span>
+<span class="kn">from</span> <span class="nn">.sklearn_import.metrics.pairwise</span> <span class="k">import</span> <span class="n">euclidean_distances</span>
+<span class="kn">from</span> <span class="nn">.sklearn_import.utils.extmath</span> <span class="k">import</span> <span class="n">row_norms</span><span class="p">,</span> <span class="n">squared_norm</span><span class="p">,</span> <span class="n">cartesian</span>
+<span class="kn">from</span> <span class="nn">.sklearn_import.utils.validation</span> <span class="k">import</span> <span class="n">check_array</span><span class="p">,</span> <span class="n">check_random_state</span><span class="p">,</span> <span class="n">as_float_array</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="k">import</span> <span class="n">Parallel</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="k">import</span> <span class="n">delayed</span>
 
 <span class="c1"># Internal scikit learn methods imported into this project</span>
-<span class="kn">from</span> <span class="nn">.sklearn_cluster._k_means</span> <span class="k">import</span> <span class="n">_centers_dense</span><span class="p">,</span> <span class="n">_centers_sparse</span>
-<span class="kn">from</span> <span class="nn">.sklearn_cluster.k_means_</span> <span class="k">import</span> <span class="n">_validate_center_shape</span><span class="p">,</span> <span class="n">_tolerance</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">,</span> <span class="n">_init_centroids</span>
-
-<span class="kn">from</span> <span class="nn">ortools.graph</span> <span class="k">import</span> <span class="n">pywrapgraph</span>
+<span class="kn">from</span> <span class="nn">k_means_constrained.sklearn_import.cluster._k_means</span> <span class="k">import</span> <span class="n">_centers_dense</span><span class="p">,</span> <span class="n">_centers_sparse</span>
+<span class="kn">from</span> <span class="nn">k_means_constrained.sklearn_import.cluster.k_means_</span> <span class="k">import</span> <span class="n">_validate_center_shape</span><span class="p">,</span> <span class="n">_tolerance</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">,</span> <span class="n">_init_centroids</span>
 
 <span class="kn">from</span> <span class="nn">k_means_constrained.mincostflow_vectorized</span> <span class="k">import</span> <span class="n">SimpleMinCostFlowVectorized</span>
 
@@ -75,7 +71,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    X : array-like or sparse matrix, shape (n_samples, n_features)</span>
+<span class="sd">    X : array-like, shape (n_samples, n_features)</span>
 <span class="sd">        The observations to cluster.</span>
 
 <span class="sd">    size_min : int, optional, default: None</span>
@@ -163,6 +159,9 @@
 <span class="sd">        Returned only if `return_n_iter` is set to True.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented for sparse X&quot;</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">n_init</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid number of initializations.&quot;</span>
                          <span class="s2">&quot; n_init=</span><span class="si">%d</span><span class="s2"> must be bigger than zero.&quot;</span> <span class="o">%</span> <span class="n">n_init</span><span class="p">)</span>
@@ -321,6 +320,9 @@
 <span class="sd">    n_iter : int</span>
 <span class="sd">        Number of iterations run.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented for sparse X&quot;</span><span class="p">)</span>
+
     <span class="n">random_state</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
     <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -646,12 +648,15 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        X : array-like or sparse matrix, shape=(n_samples, n_features)</span>
+<span class="sd">        X : array-like, shape=(n_samples, n_features)</span>
 <span class="sd">            Training instances to cluster.</span>
 
 <span class="sd">        y : Ignored</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented for sparse X&quot;</span><span class="p">)</span>
+
         <span class="n">random_state</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
         <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_fit_data</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 

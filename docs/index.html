@@ -35,7 +35,7 @@
 <dl class="class">
 <dt id="k_means_constrained.KMeansConstrained">
 <em class="property">class </em><code class="sig-prename descclassname">k_means_constrained.</code><code class="sig-name descname">KMeansConstrained</code><span class="sig-paren">(</span><em class="sig-param">n_clusters=8</em>, <em class="sig-param">size_min=None</em>, <em class="sig-param">size_max=None</em>, <em class="sig-param">init='k-means++'</em>, <em class="sig-param">n_init=10</em>, <em class="sig-param">max_iter=300</em>, <em class="sig-param">tol=0.0001</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">random_state=None</em>, <em class="sig-param">copy_x=True</em>, <em class="sig-param">n_jobs=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/k_means_constrained/k_means_constrained_.html#KMeansConstrained"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#k_means_constrained.KMeansConstrained" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">k_means_constrained.sklearn_cluster.k_means_.KMeans</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">k_means_constrained.sklearn_import.cluster.k_means_.KMeans</span></code></p>
 <p>K-Means clustering with minimum and maximum cluster size constraints</p>
 <dl>
 <dt>n_clusters<span class="classifier">int, optional, default: 8</span></dt><dd><p>The number of clusters to form as well as the number of
@@ -131,7 +131,7 @@ problem. This is then solved using a cost-scaling push-relabel algorithm. The im
 <code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/k_means_constrained/k_means_constrained_.html#KMeansConstrained.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#k_means_constrained.KMeansConstrained.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute k-means clustering.</p>
 <dl class="simple">
-<dt>X<span class="classifier">array-like or sparse matrix, shape=(n_samples, n_features)</span></dt><dd><p>Training instances to cluster.</p>
+<dt>X<span class="classifier">array-like, shape=(n_samples, n_features)</span></dt><dd><p>Training instances to cluster.</p>
 </dd>
 </dl>
 <p>y : Ignored</p>
