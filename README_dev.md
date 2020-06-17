@@ -3,34 +3,32 @@
 Requires: `pip install twine`
 Don't forget to increment version number
 
-Bump verions (major, minor or micro):
+Bump version (major, minor or micro):
 
 ```shell script
 bump2version minor
+```
+
+Commit to master and get build-id from Azure Pipeline URL:
+https://dev.azure.com/josh0282/k-means-constrained/_build?definitionId=1
+
+Download distributions (artifacts)
+
+```shell script
+make download-dists ID=$BUILD_ID
+```
+
+Upload to test PyPi
+
+```shell script
+make check-dist
+make test-pypi
 ```
 
 Activate virtual env (might need to `make venv-create`)
 
 ```shell script
 source k-means-env/bin/activate
-```
-
-Build distribution
-
-```shell script
-make dist
-```
-
-Check packages
-
-```shell script
-make check-dist
-```
-
-Test upload (build the source for you)
-
-```shell script
-make test-pypi
 ```
 
 Test install (in virtual env):

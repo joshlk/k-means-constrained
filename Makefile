@@ -38,6 +38,19 @@ venv-activate:
 	# Doesn't work. Need to execute manually
 	source k-means-env/bin/activate
 
+docs:
+	sphinx-build -b html docs_source docs
+
+download-dists:
+	# e.g. `make download-dists ID=8`
+	# ID is build id. You can see this in the URL when you click into the Azure pipeline
+	# Need jq installed. `brew install jq`
+	curl -s "https://dev.azure.com/josh0282/k-means-constrained/_apis/build/builds/$(ID)/artifacts" \
+		| jq -r '.value[].resource.downloadUrl' \
+		| wget --content-disposition -P dist -i -
+	unzip -j -o -d dist dist/\*.zip
+	rm dist/*.zip
+
 check-dist:
 	twine check dist/*
 
@@ -46,5 +59,3 @@ test-pypi:
 
 pypi-upload:
 	twine upload dist/*
-
-

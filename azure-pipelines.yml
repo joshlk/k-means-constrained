@@ -59,10 +59,6 @@ steps:
   inputs:
     targetPath: 'dist'
 
-# Publish artifacts to Azure artifacts
-- script: |
-    twine upload -r josh0282 dist/*
-  displayName: 'Publish to Azure artifacts'
 
 
 
