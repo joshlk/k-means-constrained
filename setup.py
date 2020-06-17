@@ -4,7 +4,8 @@
 Based on template: https://github.com/FedericoStra/cython-package-example
 """
 
-from setuptools import dist
+from setuptools import dist, find_packages
+
 dist.Distribution().fetch_build_eggs(["cython>=0.29", "numpy>=1.13"])
 
 import os
@@ -72,9 +73,5 @@ setup(
     extras_require={
         "dev": dev_requires,
         "docs": ["sphinx", "sphinx-rtd-theme"]
-    },
-    package_dir={
-        'k_means_constrained': 'k_means_constrained',
-        'sklearn_import': 'k_means_constrained/sklearn_import'
-    },
+    }
 )

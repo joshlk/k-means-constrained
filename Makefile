@@ -38,6 +38,9 @@ venv-activate:
 	# Doesn't work. Need to execute manually
 	source k-means-env/bin/activate
 
+venv-delete:
+	rm -rf k-means-env
+
 docs:
 	sphinx-build -b html docs_source docs
 
