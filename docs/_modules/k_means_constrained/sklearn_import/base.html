@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>k_means_constrained.sklearn_import.base &#8212; k-means-constrained 0.0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for k_means_constrained.sklearn_import.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">k_means_constrained.sklearn_import</span> <span class="k">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">k_means_constrained.sklearn_import.funcsigs</span> <span class="k">import</span> <span class="n">signature</span>
+
+
+<span class="k">class</span> <span class="nc">BaseEstimator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for all estimators in scikit-learn</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    All estimators should specify all the parameters that can be set</span>
+<span class="sd">    at the class level in their ``__init__`` as explicit keyword</span>
+<span class="sd">    arguments (no ``*args`` or ``**kwargs``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_param_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get parameter names for the estimator&quot;&quot;&quot;</span>
+        <span class="c1"># fetch the constructor or the original constructor before</span>
+        <span class="c1"># deprecation wrapping if any</span>
+        <span class="n">init</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">,</span> <span class="s1">&#39;deprecated_original&#39;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__init__</span><span class="p">:</span>
+            <span class="c1"># No explicit constructor to introspect</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># introspect the constructor arguments to find the model parameters</span>
+        <span class="c1"># to represent</span>
+        <span class="n">init_signature</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">init</span><span class="p">)</span>
+        <span class="c1"># Consider the constructor parameters excluding &#39;self&#39;</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">init_signature</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                      <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;self&#39;</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="n">p</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;scikit-learn estimators should always &quot;</span>
+                                   <span class="s2">&quot;specify their parameters in the signature&quot;</span>
+                                   <span class="s2">&quot; of their __init__ (no varargs).&quot;</span>
+                                   <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> with constructor </span><span class="si">%s</span><span class="s2"> doesn&#39;t &quot;</span>
+                                   <span class="s2">&quot; follow this convention.&quot;</span>
+                                   <span class="o">%</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">init_signature</span><span class="p">))</span>
+        <span class="c1"># Extract and sort argument names excluding &#39;self&#39;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get parameters for this estimator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        deep : boolean, optional</span>
+<span class="sd">            If True, will return the parameters for this estimator and</span>
+<span class="sd">            contained subobjects that are estimators.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        params : mapping of string to any</span>
+<span class="sd">            Parameter names mapped to their values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_param_names</span><span class="p">():</span>
+            <span class="c1"># We need deprecation warnings to always be on in order to</span>
+            <span class="c1"># catch deprecated param values.</span>
+            <span class="c1"># This is set in utils/__init__.py but it gets overwritten</span>
+            <span class="c1"># when running under python3 somehow.</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;always&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">(</span><span class="n">record</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="ow">and</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="ne">DeprecationWarning</span><span class="p">:</span>
+                    <span class="c1"># if the parameter is deprecated, don&#39;t show it</span>
+                    <span class="k">continue</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># XXX: should we rather test if instance of estimator?</span>
+            <span class="k">if</span> <span class="n">deep</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;get_params&#39;</span><span class="p">):</span>
+                <span class="n">deep_items</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">key</span> <span class="o">+</span> <span class="s1">&#39;__&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">deep_items</span><span class="p">)</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the parameters of this estimator.</span>
+
+<span class="sd">        The method works on simple estimators as well as on nested objects</span>
+<span class="sd">        (such as pipelines). The latter have parameters of the form</span>
+<span class="sd">        ``&lt;component&gt;__&lt;parameter&gt;`` so that it&#39;s possible to update each</span>
+<span class="sd">        component of a nested object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="p">:</span>
+            <span class="c1"># Simple optimization to gain speed (inspect is slow)</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">valid_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">nested_params</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># grouped by prefix</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">delim</span><span class="p">,</span> <span class="n">sub_key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_params</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid parameter </span><span class="si">%s</span><span class="s1"> for estimator </span><span class="si">%s</span><span class="s1">. &#39;</span>
+                                 <span class="s1">&#39;Check the list of available parameters &#39;</span>
+                                 <span class="s1">&#39;with `estimator.get_params().keys()`.&#39;</span> <span class="o">%</span>
+                                 <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">delim</span><span class="p">:</span>
+                <span class="n">nested_params</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">sub_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">sub_params</span> <span class="ow">in</span> <span class="n">nested_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">valid_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">sub_params</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">class_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">(</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">class_name</span><span class="p">,</span> <span class="n">_pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                                               <span class="n">offset</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">class_name</span><span class="p">),),)</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__module__</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;sklearn.&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">_sklearn_version</span><span class="o">=</span><span class="n">__version__</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">state</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__module__</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;sklearn.&#39;</span><span class="p">):</span>
+            <span class="n">pickle_version</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_sklearn_version&quot;</span><span class="p">,</span> <span class="s2">&quot;pre-0.18&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pickle_version</span> <span class="o">!=</span> <span class="n">__version__</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;Trying to unpickle estimator </span><span class="si">{0}</span><span class="s2"> from version </span><span class="si">{1}</span><span class="s2"> when &quot;</span>
+                    <span class="s2">&quot;using version </span><span class="si">{2}</span><span class="s2">. This might lead to breaking code or &quot;</span>
+                    <span class="s2">&quot;invalid results. Use at your own risk.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">pickle_version</span><span class="p">,</span> <span class="n">__version__</span><span class="p">),</span>
+                    <span class="ne">UserWarning</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ClusterMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mixin class for all cluster estimators in scikit-learn.&quot;&quot;&quot;</span>
+    <span class="n">_estimator_type</span> <span class="o">=</span> <span class="s2">&quot;clusterer&quot;</span>
+
+    <span class="k">def</span> <span class="nf">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Performs clustering on X and returns cluster labels.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : ndarray, shape (n_samples, n_features)</span>
+<span class="sd">            Input data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y : ndarray, shape (n_samples,)</span>
+<span class="sd">            cluster labels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># non-optimized default implementation; override when a better</span>
+        <span class="c1"># method is possible for a given clustering algorithm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span>
+
+
+<span class="k">class</span> <span class="nc">TransformerMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mixin class for all transformers in scikit-learn.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit to data, then transform it.</span>
+
+<span class="sd">        Fits transformer to X and y with optional parameters fit_params</span>
+<span class="sd">        and returns a transformed version of X.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy array of shape [n_samples, n_features]</span>
+<span class="sd">            Training set.</span>
+
+<span class="sd">        y : numpy array of shape [n_samples]</span>
+<span class="sd">            Target values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_new : numpy array of shape [n_samples, n_features_new]</span>
+<span class="sd">            Transformed array.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># non-optimized default implementation; override when a better</span>
+        <span class="c1"># method is possible for a given clustering algorithm</span>
+        <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># fit method of arity 1 (unsupervised transformation)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># fit method of arity 2 (supervised transformation)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_pprint</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">printer</span><span class="o">=</span><span class="nb">repr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Pretty print the dictionary &#39;params&#39;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : dict</span>
+<span class="sd">        The dictionary to pretty print</span>
+
+<span class="sd">    offset : int</span>
+<span class="sd">        The offset in characters to add at the begin of each line.</span>
+
+<span class="sd">    printer : callable</span>
+<span class="sd">        The function to convert entries to strings, typically</span>
+<span class="sd">        the builtin str or repr</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Do a multi-line justified repr:</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">get_printoptions</span><span class="p">()</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">edgeitems</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">params_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">this_line_length</span> <span class="o">=</span> <span class="n">offset</span>
+    <span class="n">line_sep</span> <span class="o">=</span> <span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">offset</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="s1">&#39; &#39;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">params</span><span class="p">))):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">float</span><span class="p">:</span>
+            <span class="c1"># use str for representing floating point numbers</span>
+            <span class="c1"># this way we get consistent representation across</span>
+            <span class="c1"># architectures and versions.</span>
+            <span class="n">this_repr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># use repr of the rest</span>
+            <span class="n">this_repr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">printer</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">this_repr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">500</span><span class="p">:</span>
+            <span class="n">this_repr</span> <span class="o">=</span> <span class="n">this_repr</span><span class="p">[:</span><span class="mi">300</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;...&#39;</span> <span class="o">+</span> <span class="n">this_repr</span><span class="p">[</span><span class="o">-</span><span class="mi">100</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">this_line_length</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">this_repr</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">75</span> <span class="ow">or</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">this_repr</span><span class="p">):</span>
+                <span class="n">params_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_sep</span><span class="p">)</span>
+                <span class="n">this_line_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line_sep</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">params_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="p">)</span>
+                <span class="n">this_line_length</span> <span class="o">+=</span> <span class="mi">2</span>
+        <span class="n">params_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_repr</span><span class="p">)</span>
+        <span class="n">this_line_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">this_repr</span><span class="p">)</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">params_list</span><span class="p">)</span>
+    <span class="c1"># Strip trailing space to avoid nightmare in doctests</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">lines</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">lines</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">k-means-constrained</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Josh Levy-Kramer.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
