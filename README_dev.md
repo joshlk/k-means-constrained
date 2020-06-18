@@ -3,7 +3,7 @@
 Requires: `pip install twine`
 Don't forget to increment version number
 
-Bump version (major, minor or micro):
+Bump version (major, minor or patch):
 
 ```shell script
 bump2version micro
