@@ -60,8 +60,8 @@ steps:
 # Use bash for all platforms including Windows
 - bash: |
     cd $(mktemp -d)  # change to tempory directory
+    pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
     pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
-    pip install $(System.DefaultWorkingDirectory)/dist/*.whl
     pytest $(System.DefaultWorkingDirectory)/tests
     pip uninstall -y k-means-constrained
   displayName: 'Install wheel and test'
@@ -70,8 +70,8 @@ steps:
 # Use bash for all platforms including Windows
 - bash: |
     cd $(mktemp -d)  # change to tempory directory
-    pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
     pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
+    pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
     pytest $(System.DefaultWorkingDirectory)/tests
     pip uninstall -y k-means-constrained
   displayName: 'Compile sdist, install and test'
