@@ -48,6 +48,7 @@ download-dists:
 	# e.g. `make download-dists ID=8`
 	# ID is build id. You can see this in the URL when you click into the Azure pipeline
 	# Need jq installed. `brew install jq`
+	rm -r dist/*
 	curl -s "https://dev.azure.com/josh0282/k-means-constrained/_apis/build/builds/$(ID)/artifacts" \
 		| jq -r '.value[].resource.downloadUrl' \
 		| wget --content-disposition -P dist -i -
