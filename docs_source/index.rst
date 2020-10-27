@@ -6,10 +6,21 @@
 Welcome to k-means-constrained's documentation!
 ===============================================
 
+The GitHub project can be found `here <https://github.com/joshlk/k-means-constrained>`_.
+
+To install k-means-constrained using pip:
+
+.. code-block:: python
+
+   pip install k-means-constrained
+
+
+API documentation:
+
+
 .. automodule:: k_means_constrained
    :members:
    :undoc-members:
-   :show-inheritance:
    :inherited-members:
 
 

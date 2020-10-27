@@ -13,12 +13,13 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../'))
+import sphinx_rtd_theme
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'k-means-constrained'
-copyright = '2020, Josh Levy-Kramer'
+copyright = '2020, Josh Levy-Kramer. Documentation derived from Scikit-Learn'
 author = 'Josh Levy-Kramer'
 
 # The full version, including alpha/beta/rc tags
@@ -31,7 +32,9 @@ release = '0.0.2'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc','sphinx.ext.viewcode'
+    'sphinx.ext.autodoc','sphinx.ext.viewcode',
+    "sphinx_rtd_theme",
+    "numpydoc",
 ]
 
 # Include Python objects as they appear in source files
@@ -54,7 +57,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme' #'alabaster'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
