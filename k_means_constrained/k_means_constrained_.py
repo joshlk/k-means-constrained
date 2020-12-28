@@ -575,15 +575,20 @@ class KMeansConstrained(KMeans):
     >>> from k_means_constrained import KMeansConstrained
     >>> import numpy as np
     >>> X = np.array([[1, 2], [1, 4], [1, 0],
-    ...               [4, 2], [4, 4], [4, 0]])
-    >>> clf = KMeansConstrained(n_clusters=2, size_min=2, size_max=5, random_state=0).fit(X)
-    >>> clf.labels_
+    ...                [4, 2], [4, 4], [4, 0]])
+    >>> clf = KMeansConstrained(
+    ...     n_clusters=2,
+    ...     size_min=2,
+    ...     size_max=5,
+    ...     random_state=0
+    ... )
+    >>> clf.fit_predict(X)
     array([0, 0, 0, 1, 1, 1], dtype=int32)
-    >>> clf.predict([[0, 0], [4, 4]])
-    array([0, 1], dtype=int32)
     >>> clf.cluster_centers_
     array([[ 1.,  2.],
            [ 4.,  2.]])
+    >>> clf.labels_
+    array([0, 0, 0, 1, 1, 1], dtype=int32)
 
     Notes
     ------
@@ -706,3 +711,20 @@ class KMeansConstrained(KMeans):
             _labels_constrained(X, self.cluster_centers_, size_min, size_max, distances=distances)
 
         return labels
+
+    def fit_predict(self, X, y=None):
+        """Compute cluster centers and predict cluster index for each sample.
+
+        Equivalent to calling fit(X) followed by predict(X) but also more efficient.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
+            New data to transform.
+
+        Returns
+        -------
+        labels : array, shape [n_samples,]
+            Index of the cluster each sample belongs to.
+        """
+        return self.fit(X).labels_

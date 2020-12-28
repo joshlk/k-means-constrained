@@ -1,7 +1,7 @@
 [![PyPI](https://img.shields.io/pypi/v/k-means-constrained)](https://pypi.org/project/k-means-constrained/)
 ![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
 [![Build Status](https://dev.azure.com/josh0282/k-means-constrained/_apis/build/status/joshlk.k-means-constrained?branchName=master)](https://dev.azure.com/josh0282/k-means-constrained/_build/latest?definitionId=1&branchName=master)
-[API Documentation](https://joshlk.github.io/k-means-constrained/)
+[![Documentation](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://joshlk.github.io/k-means-constrained/)
 
 # k-means-constrained
 K-means clustering implementation whereby a minimum and/or maximum size for each
@@ -34,21 +34,22 @@ You can install the k-means-constrained from PyPI:
 pip install k-means-constrained
 ```
 
-It is suported on Python 3.6 and above.
+It is supported on Python 3.6 and above.
 
 # Example
+
 ```python
 >>> from k_means_constrained import KMeansConstrained
 >>> import numpy as np
 >>> X = np.array([[1, 2], [1, 4], [1, 0],
->>>                [4, 2], [4, 4], [4, 0]])
+...                [4, 2], [4, 4], [4, 0]])
 >>> clf = KMeansConstrained(
->>>     n_clusters=2,
->>>     size_min=2,
->>>     size_max=5,
->>>     random_state=0
->>> )
->>> clf.fit(X)
+...     n_clusters=2,
+...     size_min=2,
+...     size_max=5,
+...     random_state=0
+... )
+>>> clf.fit_predict(X)
 array([0, 0, 0, 1, 1, 1], dtype=int32)
 >>> clf.cluster_centers_
 array([[ 1.,  2.],
