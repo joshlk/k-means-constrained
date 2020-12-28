@@ -163,21 +163,22 @@
 <span class="kn">import</span> <span class="nn">scipy.sparse</span> <span class="k">as</span> <span class="nn">sp</span>
 <span class="kn">from</span> <span class="nn">.sklearn_import.metrics.pairwise</span> <span class="kn">import</span> <span class="n">euclidean_distances</span>
 <span class="kn">from</span> <span class="nn">.sklearn_import.utils.extmath</span> <span class="kn">import</span> <span class="n">row_norms</span><span class="p">,</span> <span class="n">squared_norm</span><span class="p">,</span> <span class="n">cartesian</span>
-<span class="kn">from</span> <span class="nn">.sklearn_import.utils.validation</span> <span class="kn">import</span> <span class="n">check_array</span><span class="p">,</span> <span class="n">check_random_state</span><span class="p">,</span> <span class="n">as_float_array</span>
+<span class="kn">from</span> <span class="nn">.sklearn_import.utils.validation</span> <span class="kn">import</span> <span class="n">check_array</span><span class="p">,</span> <span class="n">check_random_state</span><span class="p">,</span> <span class="n">as_float_array</span><span class="p">,</span> <span class="n">check_is_fitted</span>
 <span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span>
 <span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">delayed</span>
 
 <span class="c1"># Internal scikit learn methods imported into this project</span>
 <span class="kn">from</span> <span class="nn">k_means_constrained.sklearn_import.cluster._k_means</span> <span class="kn">import</span> <span class="n">_centers_dense</span><span class="p">,</span> <span class="n">_centers_sparse</span>
-<span class="kn">from</span> <span class="nn">k_means_constrained.sklearn_import.cluster.k_means_</span> <span class="kn">import</span> <span class="n">_validate_center_shape</span><span class="p">,</span> <span class="n">_tolerance</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">,</span> <span class="n">_init_centroids</span>
+<span class="kn">from</span> <span class="nn">k_means_constrained.sklearn_import.cluster.k_means_</span> <span class="kn">import</span> <span class="n">_validate_center_shape</span><span class="p">,</span> <span class="n">_tolerance</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">,</span> \
+    <span class="n">_init_centroids</span>
 
 <span class="kn">from</span> <span class="nn">k_means_constrained.mincostflow_vectorized</span> <span class="kn">import</span> <span class="n">SimpleMinCostFlowVectorized</span>
 
 
 <span class="k">def</span> <span class="nf">k_means_constrained</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">,</span> <span class="n">size_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="s1">&#39;k-means++&#39;</span><span class="p">,</span>
-            <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">copy_x</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">return_n_iter</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                        <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">copy_x</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">return_n_iter</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;K-Means clustering with minimum and maximum cluster size constraints.</span>
 
 <span class="sd">    Read more in the :ref:`User Guide &lt;k_means&gt;`.</span>
@@ -334,12 +335,12 @@
         <span class="n">seeds</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_init</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)(</span>
             <span class="n">delayed</span><span class="p">(</span><span class="n">kmeans_constrained_single</span><span class="p">)(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">,</span>
-                                   <span class="n">size_min</span><span class="o">=</span><span class="n">size_min</span><span class="p">,</span> <span class="n">size_max</span><span class="o">=</span><span class="n">size_max</span><span class="p">,</span>
-                                   <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">init</span><span class="p">,</span>
-                                   <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span>
-                                   <span class="n">x_squared_norms</span><span class="o">=</span><span class="n">x_squared_norms</span><span class="p">,</span>
-                                   <span class="c1"># Change seed to ensure variety</span>
-                                   <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+                                               <span class="n">size_min</span><span class="o">=</span><span class="n">size_min</span><span class="p">,</span> <span class="n">size_max</span><span class="o">=</span><span class="n">size_max</span><span class="p">,</span>
+                                               <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">init</span><span class="p">,</span>
+                                               <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span>
+                                               <span class="n">x_squared_norms</span><span class="o">=</span><span class="n">x_squared_norms</span><span class="p">,</span>
+                                               <span class="c1"># Change seed to ensure variety</span>
+                                               <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span><span class="p">)</span>
         <span class="c1"># Get results with the lowest inertia</span>
         <span class="n">labels</span><span class="p">,</span> <span class="n">inertia</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">n_iters</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">results</span><span class="p">)</span>
@@ -361,9 +362,9 @@
 
 
 <span class="k">def</span> <span class="nf">kmeans_constrained_single</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">,</span> <span class="n">size_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                         <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="s1">&#39;k-means++&#39;</span><span class="p">,</span>
-                         <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                         <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
+                              <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="s1">&#39;k-means++&#39;</span><span class="p">,</span>
+                              <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">x_squared_norms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A single run of k-means constrained, assumes preparation completed prior.</span>
 
 <span class="sd">    Parameters</span>
@@ -462,7 +463,7 @@
                          <span class="s2">&quot;than the number of data points or `None`&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">size_max</span> <span class="o">&lt;</span> <span class="n">size_min</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;size_max must be larger than size_min&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">size_min</span><span class="o">*</span><span class="n">n_clusters</span> <span class="o">&gt;</span> <span class="n">n_samples</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">size_min</span> <span class="o">*</span> <span class="n">n_clusters</span> <span class="o">&gt;</span> <span class="n">n_samples</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The product of size_min and n_clusters cannot exceed the number of samples (X)&quot;</span><span class="p">)</span>
 
     <span class="c1"># iterations</span>
@@ -547,14 +548,13 @@
     <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 
     <span class="c1"># Change distances in-place</span>
-    <span class="n">distances</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">D</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">labels</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>  <span class="c1"># Square for M step of EM</span>
+    <span class="n">distances</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">D</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">labels</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># Square for M step of EM</span>
     <span class="n">inertia</span> <span class="o">=</span> <span class="n">distances</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">inertia</span>
 
 
 <span class="k">def</span> <span class="nf">minimum_cost_flow_problem_graph</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">size_min</span><span class="p">,</span> <span class="n">size_max</span><span class="p">):</span>
-
     <span class="c1"># Setup minimum cost flow formulation graph</span>
     <span class="c1"># Vertices indexes:</span>
     <span class="c1"># X-nodes: [0, n(x)-1], C-nodes: [n(X), n(X)+n(C)-1], C-dummy nodes:[n(X)+n(C), n(X)+2*n(C)-1],</span>
@@ -591,7 +591,7 @@
     <span class="c1"># Sources and sinks</span>
     <span class="n">supplies_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_X</span><span class="p">)</span>
     <span class="n">supplies_C</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">size_min</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_C</span><span class="p">)</span>  <span class="c1"># Demand node</span>
-    <span class="n">supplies_art</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_X</span> <span class="o">-</span> <span class="n">n_C</span><span class="o">*</span><span class="n">size_min</span><span class="p">)</span>  <span class="c1"># Demand node</span>
+    <span class="n">supplies_art</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_X</span> <span class="o">-</span> <span class="n">n_C</span> <span class="o">*</span> <span class="n">size_min</span><span class="p">)</span>  <span class="c1"># Demand node</span>
     <span class="n">supplies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
         <span class="n">supplies_X</span><span class="p">,</span>
         <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_C</span><span class="p">),</span>  <span class="c1"># C_dummies</span>
@@ -601,7 +601,7 @@
 
     <span class="c1"># All arrays must be of int dtype for `SimpleMinCostFlow`</span>
     <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
-    <span class="n">costs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">costs</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>  <span class="c1"># Times by 1000 to give extra precision</span>
+    <span class="n">costs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">costs</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>  <span class="c1"># Times by 1000 to give extra precision</span>
     <span class="n">capacities</span> <span class="o">=</span> <span class="n">capacities</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
     <span class="n">supplies</span> <span class="o">=</span> <span class="n">supplies</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
 
@@ -609,7 +609,6 @@
 
 
 <span class="k">def</span> <span class="nf">solve_min_cost_flow_graph</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">capacities</span><span class="p">,</span> <span class="n">supplies</span><span class="p">,</span> <span class="n">n_C</span><span class="p">,</span> <span class="n">n_X</span><span class="p">):</span>
-
     <span class="c1"># Instantiate a SimpleMinCostFlow solver.</span>
     <span class="n">min_cost_flow</span> <span class="o">=</span> <span class="n">SimpleMinCostFlowVectorized</span><span class="p">()</span>
 
@@ -621,7 +620,7 @@
     <span class="n">N_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">supplies</span><span class="p">)</span>
 
     <span class="c1"># Add each edge with associated capacities and cost</span>
-    <span class="n">min_cost_flow</span><span class="o">.</span><span class="n">AddArcWithCapacityAndUnitCostVectorized</span><span class="p">(</span><span class="n">edges</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">capacities</span><span class="p">,</span> <span class="n">costs</span><span class="p">)</span>
+    <span class="n">min_cost_flow</span><span class="o">.</span><span class="n">AddArcWithCapacityAndUnitCostVectorized</span><span class="p">(</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">capacities</span><span class="p">,</span> <span class="n">costs</span><span class="p">)</span>
 
     <span class="c1"># Add node supplies</span>
     <span class="n">min_cost_flow</span><span class="o">.</span><span class="n">SetNodeSupplyVectorized</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_nodes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">),</span> <span class="n">supplies</span><span class="p">)</span>
@@ -757,7 +756,7 @@
                          <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="n">copy_x</span><span class="o">=</span><span class="n">copy_x</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="KMeansConstrained.fit"><a class="viewcode-back" href="../../index.html#k_means_constrained.KMeansConstrained.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compute k-means clustering.</span>
+        <span class="sd">&quot;&quot;&quot;Compute k-means clustering with given constants.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -782,7 +781,77 @@
                 <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="n">copy_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">copy_x</span><span class="p">,</span>
                 <span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
                 <span class="n">return_n_iter</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="KMeansConstrained.predict"><a class="viewcode-back" href="../../index.html#k_means_constrained.KMeansConstrained.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">size_min</span><span class="o">=</span><span class="s1">&#39;init&#39;</span><span class="p">,</span> <span class="n">size_max</span><span class="o">=</span><span class="s1">&#39;init&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict the closest cluster each sample in X belongs to given the provided constraints.</span>
+<span class="sd">        The constraints can be temporally overridden when determining which cluster each datapoint is assigned to.</span>
+
+<span class="sd">        Only computes the assignment step. It does not re-fit the cluster positions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : array-like, shape = [n_samples, n_features]</span>
+<span class="sd">            New data to predict.</span>
+
+<span class="sd">        size_min : int, optional, default: size_min provided with initialisation</span>
+<span class="sd">            Constrain the label assignment so that each cluster has a minimum</span>
+<span class="sd">            size of size_min. If None, no constrains will be applied.</span>
+<span class="sd">            If &#39;init&#39; the value provided during initialisation of the</span>
+<span class="sd">            class will be used.</span>
+
+<span class="sd">        size_max : int, optional, default: size_max provided with initialisation</span>
+<span class="sd">            Constrain the label assignment so that each cluster has a maximum</span>
+<span class="sd">            size of size_max. If None, no constrains will be applied.</span>
+<span class="sd">            If &#39;init&#39; the value provided during initialisation of the</span>
+<span class="sd">            class will be used.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        labels : array, shape [n_samples,]</span>
+<span class="sd">            Index of the cluster each sample belongs to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented for sparse X&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">size_min</span> <span class="o">==</span> <span class="s1">&#39;init&#39;</span><span class="p">:</span>
+            <span class="n">size_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_min</span>
+        <span class="k">if</span> <span class="n">size_max</span> <span class="o">==</span> <span class="s1">&#39;init&#39;</span><span class="p">:</span>
+            <span class="n">size_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_max</span>
+
+        <span class="n">n_clusters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_clusters</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;cluster_centers_&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_test_data</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="c1"># Allocate memory to store the distances for each sample to its</span>
+        <span class="c1"># closer center for reallocation in case of ties</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="c1"># Determine min and max sizes if non given</span>
+        <span class="k">if</span> <span class="n">size_min</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">size_min</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">size_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">size_max</span> <span class="o">=</span> <span class="n">n_samples</span>  <span class="c1"># Number of data points</span>
+
+        <span class="c1"># Check size min and max</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="n">size_min</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">size_min</span> <span class="o">&lt;=</span> <span class="n">n_samples</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="n">size_max</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">size_max</span> <span class="o">&lt;=</span> <span class="n">n_samples</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;size_min and size_max must be a positive number smaller &quot;</span>
+                             <span class="s2">&quot;than the number of data points or `None`&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size_max</span> <span class="o">&lt;</span> <span class="n">size_min</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;size_max must be larger than size_min&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size_min</span> <span class="o">*</span> <span class="n">n_clusters</span> <span class="o">&gt;</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The product of size_min and n_clusters cannot exceed the number of samples (X)&quot;</span><span class="p">)</span>
+
+        <span class="n">labels</span><span class="p">,</span> <span class="n">inertia</span> <span class="o">=</span> \
+            <span class="n">_labels_constrained</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="p">,</span> <span class="n">size_min</span><span class="p">,</span> <span class="n">size_max</span><span class="p">,</span> <span class="n">distances</span><span class="o">=</span><span class="n">distances</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">labels</span></div></div>
 </pre></div>
 
            </div>
@@ -796,7 +865,7 @@
   <div role="contentinfo">
     <p>
         
-        &copy; Copyright 2020, Josh Levy-Kramer
+        &copy; Copyright 2020, Josh Levy-Kramer. Documentation derived from Scikit-Learn
 
     </p>
   </div>

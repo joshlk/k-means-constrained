@@ -128,13 +128,42 @@ def test_KMeansConstrained():
         size_max=size_max
     )
 
-    clf.fit(X)
     y = clf.fit_predict(X)
 
     # Labels
     cluster_size = pd.Series(y).value_counts()
     assert (cluster_size > size_max).sum() == 0
     assert (cluster_size < size_min).sum() == 0
+
+
+def test_KMeansConstrained_predict_method():
+    X = np.array([
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [1, 1],
+    ])
+
+    k = 2
+    size_max = 2
+
+    clf = KMeansConstrained(
+        n_clusters=k,
+        size_max=size_max
+    )
+
+    clf.fit(X)
+
+    y_constrained = clf.predict(X)  # Expected np.array([0, 0, 1, 1])
+    y_normal = super(KMeansConstrained, clf).predict(X)  # Expected np.array([0, 0, 0, 1])
+
+    cluster_size_constrained = pd.Series(y_constrained).value_counts()
+    assert (cluster_size_constrained > size_max).any() == False
+    assert len(cluster_size_constrained) == k
+
+    cluster_size_normal = pd.Series(y_normal).value_counts()
+    assert (cluster_size_normal > size_max).any() == True
+    assert len(cluster_size_normal) == k
 
 
 def test_spare_not_implemented():
@@ -273,7 +302,6 @@ def test_spare_not_implemented():
 #         n_jobs=n_jobs
 #     )
 #
-#     clf.fit(X)
 #     y = clf.fit_predict(X)
 #
 #     # Labels

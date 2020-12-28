@@ -17,21 +17,22 @@ import numpy as np
 import scipy.sparse as sp
 from .sklearn_import.metrics.pairwise import euclidean_distances
 from .sklearn_import.utils.extmath import row_norms, squared_norm, cartesian
-from .sklearn_import.utils.validation import check_array, check_random_state, as_float_array
+from .sklearn_import.utils.validation import check_array, check_random_state, as_float_array, check_is_fitted
 from joblib import Parallel
 from joblib import delayed
 
 # Internal scikit learn methods imported into this project
 from k_means_constrained.sklearn_import.cluster._k_means import _centers_dense, _centers_sparse
-from k_means_constrained.sklearn_import.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, _init_centroids
+from k_means_constrained.sklearn_import.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, \
+    _init_centroids
 
 from k_means_constrained.mincostflow_vectorized import SimpleMinCostFlowVectorized
 
 
 def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-means++',
-            n_init=10, max_iter=300, verbose=False,
-            tol=1e-4, random_state=None, copy_x=True, n_jobs=1,
-            return_n_iter=False):
+                        n_init=10, max_iter=300, verbose=False,
+                        tol=1e-4, random_state=None, copy_x=True, n_jobs=1,
+                        return_n_iter=False):
     """K-Means clustering with minimum and maximum cluster size constraints.
 
     Read more in the :ref:`User Guide <k_means>`.
@@ -188,12 +189,12 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
         seeds = random_state.randint(np.iinfo(np.int32).max, size=n_init)
         results = Parallel(n_jobs=n_jobs, verbose=0)(
             delayed(kmeans_constrained_single)(X, n_clusters,
-                                   size_min=size_min, size_max=size_max,
-                                   max_iter=max_iter, init=init,
-                                   verbose=verbose, tol=tol,
-                                   x_squared_norms=x_squared_norms,
-                                   # Change seed to ensure variety
-                                   random_state=seed)
+                                               size_min=size_min, size_max=size_max,
+                                               max_iter=max_iter, init=init,
+                                               verbose=verbose, tol=tol,
+                                               x_squared_norms=x_squared_norms,
+                                               # Change seed to ensure variety
+                                               random_state=seed)
             for seed in seeds)
         # Get results with the lowest inertia
         labels, inertia, centers, n_iters = zip(*results)
@@ -215,9 +216,9 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
 
 
 def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
-                         max_iter=300, init='k-means++',
-                         verbose=False, x_squared_norms=None,
-                         random_state=None, tol=1e-4):
+                              max_iter=300, init='k-means++',
+                              verbose=False, x_squared_norms=None,
+                              random_state=None, tol=1e-4):
     """A single run of k-means constrained, assumes preparation completed prior.
 
     Parameters
@@ -316,7 +317,7 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
                          "than the number of data points or `None`")
     if size_max < size_min:
         raise ValueError("size_max must be larger than size_min")
-    if size_min*n_clusters > n_samples:
+    if size_min * n_clusters > n_samples:
         raise ValueError("The product of size_min and n_clusters cannot exceed the number of samples (X)")
 
     # iterations
@@ -401,14 +402,13 @@ def _labels_constrained(X, centers, size_min, size_max, distances):
     labels = labels.astype(np.int32)
 
     # Change distances in-place
-    distances[:] = D[np.arange(D.shape[0]), labels]**2  # Square for M step of EM
+    distances[:] = D[np.arange(D.shape[0]), labels] ** 2  # Square for M step of EM
     inertia = distances.sum()
 
     return labels, inertia
 
 
 def minimum_cost_flow_problem_graph(X, C, D, size_min, size_max):
-
     # Setup minimum cost flow formulation graph
     # Vertices indexes:
     # X-nodes: [0, n(x)-1], C-nodes: [n(X), n(X)+n(C)-1], C-dummy nodes:[n(X)+n(C), n(X)+2*n(C)-1],
@@ -445,7 +445,7 @@ def minimum_cost_flow_problem_graph(X, C, D, size_min, size_max):
     # Sources and sinks
     supplies_X = np.ones(n_X)
     supplies_C = -1 * size_min * np.ones(n_C)  # Demand node
-    supplies_art = -1 * (n_X - n_C*size_min)  # Demand node
+    supplies_art = -1 * (n_X - n_C * size_min)  # Demand node
     supplies = np.concatenate([
         supplies_X,
         np.zeros(n_C),  # C_dummies
@@ -455,7 +455,7 @@ def minimum_cost_flow_problem_graph(X, C, D, size_min, size_max):
 
     # All arrays must be of int dtype for `SimpleMinCostFlow`
     edges = edges.astype('int32')
-    costs = np.around(costs*1000, 0).astype('int32')  # Times by 1000 to give extra precision
+    costs = np.around(costs * 1000, 0).astype('int32')  # Times by 1000 to give extra precision
     capacities = capacities.astype('int32')
     supplies = supplies.astype('int32')
 
@@ -463,7 +463,6 @@ def minimum_cost_flow_problem_graph(X, C, D, size_min, size_max):
 
 
 def solve_min_cost_flow_graph(edges, costs, capacities, supplies, n_C, n_X):
-
     # Instantiate a SimpleMinCostFlow solver.
     min_cost_flow = SimpleMinCostFlowVectorized()
 
@@ -475,7 +474,7 @@ def solve_min_cost_flow_graph(edges, costs, capacities, supplies, n_C, n_X):
     N_nodes = len(supplies)
 
     # Add each edge with associated capacities and cost
-    min_cost_flow.AddArcWithCapacityAndUnitCostVectorized(edges[:,0], edges[:,1], capacities, costs)
+    min_cost_flow.AddArcWithCapacityAndUnitCostVectorized(edges[:, 0], edges[:, 1], capacities, costs)
 
     # Add node supplies
     min_cost_flow.SetNodeSupplyVectorized(np.arange(N_nodes, dtype='int32'), supplies)
@@ -611,7 +610,7 @@ class KMeansConstrained(KMeans):
                          verbose=verbose, random_state=random_state, copy_x=copy_x, n_jobs=n_jobs)
 
     def fit(self, X, y=None):
-        """Compute k-means clustering.
+        """Compute k-means clustering with given constants.
 
         Parameters
         ----------
@@ -637,3 +636,73 @@ class KMeansConstrained(KMeans):
                 n_jobs=self.n_jobs,
                 return_n_iter=True)
         return self
+
+    def predict(self, X, size_min='init', size_max='init'):
+        """
+        Predict the closest cluster each sample in X belongs to given the provided constraints.
+        The constraints can be temporally overridden when determining which cluster each datapoint is assigned to.
+
+        Only computes the assignment step. It does not re-fit the cluster positions.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            New data to predict.
+
+        size_min : int, optional, default: size_min provided with initialisation
+            Constrain the label assignment so that each cluster has a minimum
+            size of size_min. If None, no constrains will be applied.
+            If 'init' the value provided during initialisation of the
+            class will be used.
+
+        size_max : int, optional, default: size_max provided with initialisation
+            Constrain the label assignment so that each cluster has a maximum
+            size of size_max. If None, no constrains will be applied.
+            If 'init' the value provided during initialisation of the
+            class will be used.
+
+        Returns
+        -------
+        labels : array, shape [n_samples,]
+            Index of the cluster each sample belongs to.
+        """
+
+        if sp.issparse(X):
+            raise NotImplementedError("Not implemented for sparse X")
+
+        if size_min == 'init':
+            size_min = self.size_min
+        if size_max == 'init':
+            size_max = self.size_max
+
+        n_clusters = self.n_clusters
+        n_samples = X.shape[0]
+
+        check_is_fitted(self, 'cluster_centers_')
+
+        X = self._check_test_data(X)
+
+        # Allocate memory to store the distances for each sample to its
+        # closer center for reallocation in case of ties
+        distances = np.zeros(shape=(n_samples,), dtype=X.dtype)
+
+        # Determine min and max sizes if non given
+        if size_min is None:
+            size_min = 0
+        if size_max is None:
+            size_max = n_samples  # Number of data points
+
+        # Check size min and max
+        if not ((size_min >= 0) and (size_min <= n_samples)
+                and (size_max >= 0) and (size_max <= n_samples)):
+            raise ValueError("size_min and size_max must be a positive number smaller "
+                             "than the number of data points or `None`")
+        if size_max < size_min:
+            raise ValueError("size_max must be larger than size_min")
+        if size_min * n_clusters > n_samples:
+            raise ValueError("The product of size_min and n_clusters cannot exceed the number of samples (X)")
+
+        labels, inertia = \
+            _labels_constrained(X, self.cluster_centers_, size_min, size_max, distances=distances)
+
+        return labels

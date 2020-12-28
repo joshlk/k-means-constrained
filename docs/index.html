@@ -267,7 +267,7 @@ problem. This is then solved using a cost-scaling push-relabel algorithm. The im
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#k_means_constrained.KMeansConstrained.fit" title="k_means_constrained.KMeansConstrained.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(X[, y])</p></td>
-<td><p>Compute k-means clustering.</p></td>
+<td><p>Compute k-means clustering with given constants.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#k_means_constrained.KMeansConstrained.fit_predict" title="k_means_constrained.KMeansConstrained.fit_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_predict</span></code></a>(X[, y])</p></td>
 <td><p>Compute cluster centers and predict cluster index for each sample.</p></td>
@@ -278,8 +278,8 @@ problem. This is then solved using a cost-scaling push-relabel algorithm. The im
 <tr class="row-even"><td><p><a class="reference internal" href="#k_means_constrained.KMeansConstrained.get_params" title="k_means_constrained.KMeansConstrained.get_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_params</span></code></a>([deep])</p></td>
 <td><p>Get parameters for this estimator.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#k_means_constrained.KMeansConstrained.predict" title="k_means_constrained.KMeansConstrained.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(X)</p></td>
-<td><p>Predict the closest cluster each sample in X belongs to.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#k_means_constrained.KMeansConstrained.predict" title="k_means_constrained.KMeansConstrained.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(X[, size_min, size_max])</p></td>
+<td><p>Predict the closest cluster each sample in X belongs to given the provided constraints.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#k_means_constrained.KMeansConstrained.score" title="k_means_constrained.KMeansConstrained.score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">score</span></code></a>(X[, y])</p></td>
 <td><p>Opposite of the value of X on the K-means objective.</p></td>
@@ -295,13 +295,45 @@ problem. This is then solved using a cost-scaling push-relabel algorithm. The im
 <dl class="py method">
 <dt id="k_means_constrained.KMeansConstrained.fit">
 <code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/k_means_constrained/k_means_constrained_.html#KMeansConstrained.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#k_means_constrained.KMeansConstrained.fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute k-means clustering.</p>
+<dd><p>Compute k-means clustering with given constants.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>X</strong><span class="classifier">array-like, shape=(n_samples, n_features)</span></dt><dd><p>Training instances to cluster.</p>
 </dd>
 <dt><strong>y</strong><span class="classifier">Ignored</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="k_means_constrained.KMeansConstrained.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">size_min</span><span class="o">=</span><span class="default_value">'init'</span></em>, <em class="sig-param"><span class="n">size_max</span><span class="o">=</span><span class="default_value">'init'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/k_means_constrained/k_means_constrained_.html#KMeansConstrained.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#k_means_constrained.KMeansConstrained.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict the closest cluster each sample in X belongs to given the provided constraints.
+The constraints can be temporally overridden when determining which cluster each datapoint is assigned to.</p>
+<p>Only computes the assignment step. It does not re-fit the cluster positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array-like, shape = [n_samples, n_features]</span></dt><dd><p>New data to predict.</p>
+</dd>
+<dt><strong>size_min</strong><span class="classifier">int, optional, default: size_min provided with initialisation</span></dt><dd><p>Constrain the label assignment so that each cluster has a minimum
+size of size_min. If None, no constrains will be applied.
+If ‘init’ the value provided during initialisation of the
+class will be used.</p>
+</dd>
+<dt><strong>size_max</strong><span class="classifier">int, optional, default: size_max provided with initialisation</span></dt><dd><p>Constrain the label assignment so that each cluster has a maximum
+size of size_max. If None, no constrains will be applied.
+If ‘init’ the value provided during initialisation of the
+class will be used.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>labels</strong><span class="classifier">array, shape [n_samples,]</span></dt><dd><p>Index of the cluster each sample belongs to.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -365,29 +397,6 @@ contained subobjects that are estimators.</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>params</strong><span class="classifier">mapping of string to any</span></dt><dd><p>Parameter names mapped to their values.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="k_means_constrained.KMeansConstrained.predict">
-<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="headerlink" href="#k_means_constrained.KMeansConstrained.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Predict the closest cluster each sample in X belongs to.</p>
-<p>In the vector quantization literature, <cite>cluster_centers_</cite> is called
-the code book and each value returned by <cite>predict</cite> is the index of
-the closest code in the code book.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>X</strong><span class="classifier">{array-like, sparse matrix}, shape = [n_samples, n_features]</span></dt><dd><p>New data to predict.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>labels</strong><span class="classifier">array, shape [n_samples,]</span></dt><dd><p>Index of the cluster each sample belongs to.</p>
 </dd>
 </dl>
 </dd>
@@ -470,7 +479,7 @@ centers.  Note that even if X is sparse, the array returned by
   <div role="contentinfo">
     <p>
         
-        &copy; Copyright 2020, Josh Levy-Kramer
+        &copy; Copyright 2020, Josh Levy-Kramer. Documentation derived from Scikit-Learn
 
     </p>
   </div>
