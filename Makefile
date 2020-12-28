@@ -18,7 +18,7 @@ install:
 	pip install .
 
 install-from-source: dist
-	pip install dist/k-means-constrained-0.4.3.tar.gz
+	pip install dist/k-means-constrained-0.5.0.tar.gz
 
 clean:
 	$(RM) -r build dist src/*.egg-info
