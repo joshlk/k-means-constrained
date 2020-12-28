@@ -53,8 +53,6 @@ array([0, 0, 0, 1, 1, 1], dtype=int32)
 >>> clf.cluster_centers_
 array([[ 1.,  2.],
        [ 4.,  2.]])
->>> clf.predict([[0, 0], [4, 4]])
-array([0, 1], dtype=int32)
+>>> clf.labels_
+array([0, 0, 0, 1, 1, 1], dtype=int32)
 ```
-
-For more details see [API Documentation](https://joshlk.github.io/k-means-constrained/).
