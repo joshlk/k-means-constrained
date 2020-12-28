@@ -20,7 +20,7 @@ has been modified so maximum cluster sizes can also be specified along
 with minimum cluster size. 
 
 The code is based on [scikit-lean's `KMeans`](https://scikit-learn.org/0.19/modules/generated/sklearn.cluster.KMeans.html)
-and implements the same API with modifications.
+and implements the same [API with modifications](https://joshlk.github.io/k-means-constrained/).
 
 Ref:
 1. [Bradley, P. S., K. P. Bennett, and Ayhan Demiriz. "Constrained k-means clustering."
@@ -37,6 +37,8 @@ pip install k-means-constrained
 It is supported on Python 3.6 and above.
 
 # Example
+
+More details can be found in the [API documentation](https://joshlk.github.io/k-means-constrained/).
 
 ```python
 >>> from k_means_constrained import KMeansConstrained
