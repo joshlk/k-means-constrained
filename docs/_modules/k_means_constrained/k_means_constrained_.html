@@ -721,15 +721,20 @@
 <span class="sd">    &gt;&gt;&gt; from k_means_constrained import KMeansConstrained</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; X = np.array([[1, 2], [1, 4], [1, 0],</span>
-<span class="sd">    ...               [4, 2], [4, 4], [4, 0]])</span>
-<span class="sd">    &gt;&gt;&gt; clf = KMeansConstrained(n_clusters=2, size_min=2, size_max=5, random_state=0).fit(X)</span>
-<span class="sd">    &gt;&gt;&gt; clf.labels_</span>
+<span class="sd">    ...                [4, 2], [4, 4], [4, 0]])</span>
+<span class="sd">    &gt;&gt;&gt; clf = KMeansConstrained(</span>
+<span class="sd">    ...     n_clusters=2,</span>
+<span class="sd">    ...     size_min=2,</span>
+<span class="sd">    ...     size_max=5,</span>
+<span class="sd">    ...     random_state=0</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; clf.fit_predict(X)</span>
 <span class="sd">    array([0, 0, 0, 1, 1, 1], dtype=int32)</span>
-<span class="sd">    &gt;&gt;&gt; clf.predict([[0, 0], [4, 4]])</span>
-<span class="sd">    array([0, 1], dtype=int32)</span>
 <span class="sd">    &gt;&gt;&gt; clf.cluster_centers_</span>
 <span class="sd">    array([[ 1.,  2.],</span>
 <span class="sd">           [ 4.,  2.]])</span>
+<span class="sd">    &gt;&gt;&gt; clf.labels_</span>
+<span class="sd">    array([0, 0, 0, 1, 1, 1], dtype=int32)</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    ------</span>
@@ -851,7 +856,24 @@
         <span class="n">labels</span><span class="p">,</span> <span class="n">inertia</span> <span class="o">=</span> \
             <span class="n">_labels_constrained</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="p">,</span> <span class="n">size_min</span><span class="p">,</span> <span class="n">size_max</span><span class="p">,</span> <span class="n">distances</span><span class="o">=</span><span class="n">distances</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">labels</span></div></div>
+        <span class="k">return</span> <span class="n">labels</span></div>
+
+<div class="viewcode-block" id="KMeansConstrained.fit_predict"><a class="viewcode-back" href="../../index.html#k_means_constrained.KMeansConstrained.fit_predict">[docs]</a>    <span class="k">def</span> <span class="nf">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute cluster centers and predict cluster index for each sample.</span>
+
+<span class="sd">        Equivalent to calling fit(X) followed by predict(X) but also more efficient.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape = [n_samples, n_features]</span>
+<span class="sd">            New data to transform.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        labels : array, shape [n_samples,]</span>
+<span class="sd">            Index of the cluster each sample belongs to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">labels_</span></div></div>
 </pre></div>
 
            </div>
