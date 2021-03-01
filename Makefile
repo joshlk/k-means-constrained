@@ -30,16 +30,17 @@ uninstall:
 	pip uninstall cython-package-example
 
 venv-create:
-	python -m venv k-means-env
+	conda create -n k-means-constrained
+	conda activate k-means-constrained
 	pip install -r requirements.txt
 	pip install -r requirements-dev.txt
 
 venv-activate:
 	# Doesn't work. Need to execute manually
-	source k-means-env/bin/activate
+	conda activate k-means-constrained
 
 venv-delete:
-	rm -rf k-means-env
+	conda env delete k-means-constrained
 
 docs:
 	sphinx-build -b html docs_source docs
