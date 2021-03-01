@@ -1,6 +1,6 @@
-"""K-means clustering"""
+"""k-means-constrained"""
 
-# Authors: Josh Levy-Kramer <josh@outra.co.uk>
+# Authors: Josh Levy-Kramer <josh@levykramer.co.uk>
 #          Gael Varoquaux <gael.varoquaux@normalesup.org>
 #          Thomas Rueckstiess <ruecksti@in.tum.de>
 #          James Bergstra <james.bergstra@umontreal.ca>
