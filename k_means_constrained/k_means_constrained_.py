@@ -319,6 +319,8 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         raise ValueError("size_max must be larger than size_min")
     if size_min * n_clusters > n_samples:
         raise ValueError("The product of size_min and n_clusters cannot exceed the number of samples (X)")
+    if size_max * n_clusters < n_samples:
+        raise ValueError("The product of size_max and n_clusters must be larger than or equal the number of samples (X)")
 
     # iterations
     for i in range(max_iter):
