@@ -8,3 +8,4 @@ sphinx
 sphinx-rtd-theme
 numpydoc
 bump2version
+nose
