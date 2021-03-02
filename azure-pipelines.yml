@@ -68,20 +68,22 @@ steps:
 # Test wheel
 # Use bash for all platforms including Windows
 - bash: |
+    set -e
     cd $(mktemp -d)  # change to tempory directory
     pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
     pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
     pytest $(System.DefaultWorkingDirectory)/tests
-    pip uninstall -y k-means-constrained || { echo 'tests failed'; exit 1 }
+    pip uninstall -y k-means-constrained
   displayName: 'Install wheel and test'
 
 # Test source distribution (sdist)
 # Use bash for all platforms including Windows
 - bash: |
+    set -e
     cd $(mktemp -d)  # change to tempory directory
     pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
     pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
-    pytest $(System.DefaultWorkingDirectory)/tests || { echo 'tests failed'; exit 1 }
+    pytest $(System.DefaultWorkingDirectory)/tests
     pip uninstall -y k-means-constrained
   displayName: 'Compile sdist, install and test'
 
