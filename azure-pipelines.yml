@@ -72,7 +72,7 @@ steps:
     pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
     pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
     pytest $(System.DefaultWorkingDirectory)/tests
-    pip uninstall -y k-means-constrained
+    pip uninstall -y k-means-constrained || { echo 'tests failed'; exit 1 }
   displayName: 'Install wheel and test'
 
 # Test source distribution (sdist)
@@ -81,7 +81,7 @@ steps:
     cd $(mktemp -d)  # change to tempory directory
     pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
     pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
-    pytest $(System.DefaultWorkingDirectory)/tests
+    pytest $(System.DefaultWorkingDirectory)/tests || { echo 'tests failed'; exit 1 }
     pip uninstall -y k-means-constrained
   displayName: 'Compile sdist, install and test'
 
