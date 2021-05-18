@@ -58,11 +58,7 @@ steps:
 
 # Test wheel
 # Use bash for all platforms including Windows
-- bash: |
-    set -e
-    cd $(mktemp -d)  # change to tempory directory
-    ls -l
-    ls -l $(System.DefaultWorkingDirectory)
+- script: |
     pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
     pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
     pytest $(System.DefaultWorkingDirectory)/tests
@@ -71,9 +67,7 @@ steps:
 
 # Test source distribution (sdist)
 # Use bash for all platforms including Windows
-- bash: |
-    set -e
-    cd $(mktemp -d)  # change to tempory directory
+- script: |
     pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
     pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
     pytest $(System.DefaultWorkingDirectory)/tests
