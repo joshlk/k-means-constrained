@@ -14,9 +14,6 @@ strategy:
     Linux_Python39:
       IMAGE_NAME: 'ubuntu-16.04'
       PYTHON_VERSION: '3.9'
-    Windows_Python36:
-      IMAGE_NAME: 'vs2017-win2016'
-      PYTHON_VERSION: '3.6'
     Windows_Python37:
       IMAGE_NAME: 'vs2017-win2016'
       PYTHON_VERSION: '3.7'
@@ -26,9 +23,6 @@ strategy:
     Windows_Python39:
       IMAGE_NAME: 'vs2017-win2016'
       PYTHON_VERSION: '3.9'
-    MacOS_Python36:
-      IMAGE_NAME: 'macos-10.14'
-      PYTHON_VERSION: '3.6'
     MacOS_Python37:
       IMAGE_NAME: 'macos-10.14'
       PYTHON_VERSION: '3.7'
