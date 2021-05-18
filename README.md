@@ -1,5 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/k-means-constrained)](https://pypi.org/project/k-means-constrained/)
-![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
+![Python](https://img.shields.io/badge/python-%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
 [![Build Status](https://dev.azure.com/josh0282/k-means-constrained/_apis/build/status/joshlk.k-means-constrained?branchName=master)](https://dev.azure.com/josh0282/k-means-constrained/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://joshlk.github.io/k-means-constrained/)
 
@@ -34,7 +34,7 @@ You can install the k-means-constrained from PyPI:
 pip install k-means-constrained
 ```
 
-It is supported on Python 3.6 and above.
+It is supported on Python 3.7 and above.
 
 # Example
 
