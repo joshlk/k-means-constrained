@@ -75,8 +75,3 @@ steps:
     pytest tests
     pip uninstall -y k-means-constrained
   displayName: 'Compile sdist, install and test'
-
-
-
-
-
