@@ -62,7 +62,7 @@ steps:
     set -e
     pip install dist/*.tar.gz
     pip install -r requirements-dev.txt
-    pytest $(System.DefaultWorkingDirectory)/tests
+    pytest tests
     pip uninstall -y k-means-constrained
   displayName: 'Install wheel and test'
 
@@ -72,7 +72,7 @@ steps:
     set -e
     pip install dist/*.tar.gz
     pip install -r requirements-dev.txt
-    pytest $(System.DefaultWorkingDirectory)/tests
+    pytest tests
     pip uninstall -y k-means-constrained
   displayName: 'Compile sdist, install and test'
 
