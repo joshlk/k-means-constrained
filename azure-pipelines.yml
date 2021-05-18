@@ -61,6 +61,8 @@ steps:
 - bash: |
     set -e
     cd $(mktemp -d)  # change to tempory directory
+    ls -l
+    ls -l $(System.DefaultWorkingDirectory)
     pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
     pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
     pytest $(System.DefaultWorkingDirectory)/tests
