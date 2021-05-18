@@ -58,18 +58,20 @@ steps:
 
 # Test wheel
 # Use bash for all platforms including Windows
-- script: |
-    pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
-    pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
+- bash: |
+    set -e
+    pip install dist/*.tar.gz
+    pip install -r requirements-dev.txt
     pytest $(System.DefaultWorkingDirectory)/tests
     pip uninstall -y k-means-constrained
   displayName: 'Install wheel and test'
 
 # Test source distribution (sdist)
 # Use bash for all platforms including Windows
-- script: |
-    pip install $(System.DefaultWorkingDirectory)/dist/*.tar.gz
-    pip install -r $(System.DefaultWorkingDirectory)/requirements-dev.txt
+- bash: |
+    set -e
+    pip install dist/*.tar.gz
+    pip install -r requirements-dev.txt
     pytest $(System.DefaultWorkingDirectory)/tests
     pip uninstall -y k-means-constrained
   displayName: 'Compile sdist, install and test'
