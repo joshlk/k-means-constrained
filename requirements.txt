@@ -1,5 +1,5 @@
-ortools >= 6.7
-scipy >= 0.13.3
-numpy >= 1.13.0
+ortools >= 9.0.9048
+scipy >= 1.6.3
+numpy >= 1.20.3
 six
 joblib
