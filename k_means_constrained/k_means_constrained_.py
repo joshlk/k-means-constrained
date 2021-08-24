@@ -82,7 +82,9 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
         Verbosity mode.
 
     tol : float, optional
-        The relative increment in the results before declaring convergence.
+        Relative tolerance with regards to Frobenius norm of the difference
+        in the cluster centers of two consecutive iterations to declare
+        convergence.
 
     random_state : int, RandomState instance or None, optional, default: None
         If int, random_state is the seed used by the random number generator;
@@ -258,7 +260,9 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         and a random state and return an initialization.
 
     tol : float, optional
-        The relative increment in the results before declaring convergence.
+        Relative tolerance with regards to Frobenius norm of the difference
+        in the cluster centers of two consecutive iterations to declare
+        convergence.
 
     verbose : boolean, optional
         Verbosity mode
@@ -533,7 +537,9 @@ class KMeansConstrained(KMeans):
         single run.
 
     tol : float, default: 1e-4
-        Relative tolerance with regards to inertia to declare convergence
+        Relative tolerance with regards to Frobenius norm of the difference
+        in the cluster centers of two consecutive iterations to declare
+        convergence.
 
     verbose : int, default 0
         Verbosity mode.
