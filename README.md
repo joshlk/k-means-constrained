@@ -59,3 +59,4 @@ array([[ 1.,  2.],
 >>> clf.labels_
 array([0, 0, 0, 1, 1, 1], dtype=int32)
 ```
+
