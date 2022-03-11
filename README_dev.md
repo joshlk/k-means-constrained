@@ -31,7 +31,7 @@ Activate virtual env (might need to `make venv-create`)
 source k-means-env/bin/activate
 ```
 
-Test install (in virtual env):
+Test install (in virtual env. Remember to cd out of k-means-constrained folder):
 
 ```shell script
 pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple k-means-constrained
