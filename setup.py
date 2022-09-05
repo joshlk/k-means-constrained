@@ -6,7 +6,7 @@ Based on template: https://github.com/FedericoStra/cython-package-example
 
 from setuptools import dist, find_packages
 
-dist.Distribution().fetch_build_eggs(["cython>=0.29", "numpy>=1.22.0"])
+dist.Distribution().fetch_build_eggs(["cython>=0.29", "numpy>=1.23.0"])
 
 import os
 from setuptools import setup, Extension
@@ -43,8 +43,6 @@ def no_cythonize(extensions, **_ignore):
     return extensions
 
 extensions = [
-    Extension("k_means_constrained.mincostflow_vectorized_", ["k_means_constrained/mincostflow_vectorized_.pyx"],
-              include_dirs=[get_include()]),
     Extension("k_means_constrained.sklearn_import.cluster._k_means", ["k_means_constrained/sklearn_import/cluster/_k_means.pyx"],
               include_dirs=[get_include()]),
     Extension("k_means_constrained.sklearn_import.metrics.pairwise_fast", ["k_means_constrained/sklearn_import/metrics/pairwise_fast.pyx"],
