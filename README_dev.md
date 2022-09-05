@@ -1,5 +1,16 @@
+# Build and test
 
-# Build and push to PyPi
+To build cython exstentions in source:
+```shell script
+make compile
+```
+
+To test:
+```shell script
+pytest
+```
+
+# Push to PyPi
 Requires: `pip install twine`
 Don't forget to increment version number
 

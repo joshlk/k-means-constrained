@@ -11,18 +11,27 @@ strategy:
     Linux_Python39:
       IMAGE_NAME: 'ubuntu-18.04'
       PYTHON_VERSION: '3.9'
+    Linux_Python310:
+      IMAGE_NAME: 'ubuntu-20.04'
+      PYTHON_VERSION: '3.10'
     Windows_Python38:
       IMAGE_NAME: 'windows-2022'
       PYTHON_VERSION: '3.8'
     Windows_Python39:
       IMAGE_NAME: 'windows-2022'
       PYTHON_VERSION: '3.9'
+    Windows_Python310:
+      IMAGE_NAME: 'windows-2022'
+      PYTHON_VERSION: '3.10'
     MacOS_Python38:
       IMAGE_NAME: 'macOS-11'
       PYTHON_VERSION: '3.8'
     MacOS_Python39:
       IMAGE_NAME: 'macOS-11'
       PYTHON_VERSION: '3.9'
+    MacOS_Python310:
+      IMAGE_NAME: 'macOS-11'
+      PYTHON_VERSION: '3.10'
 
 pool:
   vmImage: $(IMAGE_NAME)
