@@ -737,3 +737,61 @@ class KMeansConstrained(KMeans):
             Index of the cluster each sample belongs to.
         """
         return self.fit(X).labels_
+
+    def predict_new(self, X, size_min='init', size_max='init', return_new_cluster_centers=False):
+        """
+        Predict the closest cluster each sample in X belongs to for new (untrained) points.
+
+        Only computes the assignment step. It does not re-fit the cluster positions.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            New data to predict.
+
+        size_min : int, optional, default: size_min provided with initialisation
+            Constrain the label assignment so that each cluster has a minimum
+            size of size_min. If None, no constrains will be applied.
+            If 'init' the value provided during initialisation of the
+            class will be used.
+
+        size_max : int, optional, default: size_max provided with initialisation
+            Constrain the label assignment so that each cluster has a maximum
+            size of size_max. If None, no constrains will be applied.
+            If 'init' the value provided during initialisation of the
+            class will be used.
+
+        Returns
+        -------
+        new_point_labels : array, shape [n_samples,]
+            Index of the cluster each sample belongs to.
+            
+        new_point_cluster_centers_: array, [n_clusters, n_features]
+            Coordinates of cluster centers
+        """
+        
+        if sp.issparse(X):
+            raise NotImplementedError("Not implemented for sparse X")
+
+        # if size_min == 'init':
+            # size_min = self.size_min
+        # if size_max == 'init':
+            # size_max = self.size_max
+
+        n_clusters = self.n_clusters
+        n_samples = X.shape[0]
+        D = euclidean_distances(X[0:2], self.cluster_centers_, squared=False)
+        minimumIndices = []
+        #for each point, find the closest cluster center.
+        for indvidiualPointToCenterDistanceArray in D:
+            minimumDistanceIndex = np.where(indvidiualPointToCenterDistanceArray == indvidiualPointToCenterDistanceArray.min())[0][0] #the zero is because the where command returns an array of arrays. There actually also could be more than one cluster with the same minimum distance, in that case we just take the first one. For our problems, that should not happen under normal circumstances. Maybe a better algorithm would be to pick randmoly from the length of the array that where returns, to avoid a single cluster getting extra assignments.
+            print("line 708", minimumDistanceIndex, indvidiualPointToCenterDistanceArray)
+            minimumIndices.append(minimumDistanceIndex)
+        new_point_labels = np.array(minimumIndices)
+
+        if return_new_cluster_centers == False:
+            return new_point_labels
+        elif return_new_cluster_centers == True:
+            #Need to find the cluster centers for these new points...
+            new_point_cluster_centers_ = self.cluster_centers_[new_point_labels] #This is basic integer array indexing, which is good enough for us. If it was multidimensional, we would need to use "take". https://stackoverflow.com/questions/19821425/how-to-filter-numpy-array-by-list-of-indices
+            return new_point_labels, new_point_cluster_centers_
