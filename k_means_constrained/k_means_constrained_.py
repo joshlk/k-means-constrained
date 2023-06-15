@@ -738,7 +738,7 @@ class KMeansConstrained(KMeans):
         """
         return self.fit(X).labels_
 
-    def predict_new(self, X, size_min='init', size_max='init', return_new_cluster_centers=False):
+    def predict_untrained(self, X, size_min='init', size_max='init', return_new_cluster_centers=False):
         """
         Predict the closest cluster each sample in X belongs to for new (untrained) points.
 
