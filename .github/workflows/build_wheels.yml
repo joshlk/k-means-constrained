@@ -25,7 +25,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.13.1
         env:
             CIBW_TEST_REQUIRES: pytest
-            CIBW_TEST_COMMAND: pytest
+            CIBW_TEST_COMMAND: "pytest {project}/tests"
 
       - uses: actions/upload-artifact@v3
         with:
