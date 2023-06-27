@@ -6,8 +6,6 @@ Based on template: https://github.com/FedericoStra/cython-package-example
 
 from setuptools import dist, find_packages
 
-dist.Distribution().fetch_build_eggs(["cython>=0.29", "numpy>=1.23.0"])
-
 import os
 from setuptools import setup, Extension
 

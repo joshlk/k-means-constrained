@@ -174,3 +174,5 @@ k-means-env/*
 
 .DS_Store
 .DS_Store/*
+
+*.code-workspace
