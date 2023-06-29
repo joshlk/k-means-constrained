@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.python }}
+    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
