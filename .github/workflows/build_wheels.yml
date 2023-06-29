@@ -12,11 +12,10 @@ concurrency:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-11]
         python: [cp38, cp39, cp310, cp311]
         include:
             - os: ubuntu-20.04
@@ -38,7 +37,8 @@ jobs:
             CIBW_BEFORE_TEST: "pip install -r requirements-dev.txt"
             CIBW_TEST_COMMAND: "pytest {project}/tests"
             CIBW_ARCHS: ${{ matrix.arch }}
-            CIBW_BUILD: "${{ matrix.python }}*"
+            CIBW_BUILD: "${{ matrix.python }}-*"
+            CIBW_SKIP: "*-musllinux-*"
 
       - uses: actions/upload-artifact@v3
         with:
