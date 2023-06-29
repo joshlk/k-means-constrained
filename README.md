@@ -1,7 +1,7 @@
 [![PyPI](https://img.shields.io/pypi/v/k-means-constrained)](https://pypi.org/project/k-means-constrained/)
 ![Python](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
-[![Build Status](https://dev.azure.com/josh0282/k-means-constrained/_apis/build/status/joshlk.k-means-constrained?branchName=master)](https://dev.azure.com/josh0282/k-means-constrained/_build/latest?definitionId=1&branchName=master)
-[![Documentation](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://joshlk.github.io/k-means-constrained/)
+[![Build](https://github.com/joshlk/k-means-constrained/actions/workflows/build_wheels.yml/badge.svg)](https://github.com/joshlk/k-means-constrained/actions/workflows/build_wheels.yml)
+[**Documentation**](https://joshlk.github.io/k-means-constrained/)
 
 # k-means-constrained
 K-means clustering implementation whereby a minimum and/or maximum size for each
