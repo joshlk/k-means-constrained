@@ -1,4 +1,4 @@
-.PHONY: build dist redist install dist-no-cython install-from-source clean uninstall venv-create venv-activate check-dist test-pypi pypi-upload
+.PHONY: build dist redist install dist-no-cython install-from-source clean venv-create venv-activate check-dist test-pypi pypi-upload
 
 build:
 	python setup.py build
@@ -21,13 +21,10 @@ install-from-source: dist
 	pip install dist/k-means-constrained-0.5.0.tar.gz
 
 clean:
-	$(RM) -r build dist src/*.egg-info
+	$(RM) -r build dist src/*.egg-info artifact
 	$(RM) -r .pytest_cache
 	find . -name __pycache__ -exec rm -r {} +
 	#git clean -fdX
-
-uninstall:
-	pip uninstall cython-package-example
 
 venv-create:
 	conda create -n k-means-constrained
@@ -47,22 +44,16 @@ docs:
 
 download-dists:
 	# e.g. `make download-dists ID=8`
-	# ID is build id. You can see this in the URL when you click into the Azure pipeline
-	# Need jq installed. `brew install jq`
-	rm -r dist
-	mkdir dist
-	curl -s "https://dev.azure.com/josh0282/k-means-constrained/_apis/build/builds/$(ID)/artifacts" \
-		| jq -r '.value[].resource.downloadUrl' \
-		| wget --content-disposition -P dist -i -
-	unzip -j -o -d dist dist/\*.zip
-	rm dist/*.zip
-	rm dist/*linux*.whl  # Exclude Linux wheels as would need to build manylinux which is difficult. Linux is ok to compile from source
+	# ID is run id (get from url)
+	# Need gh installed. `brew install gh`
+	rm -r artifact
+	gh run download $(ID)
 
 check-dist:
-	twine check dist/*
+	twine check artifact/*
 
 test-pypi:
-	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+	twine upload --repository-url https://test.pypi.org/legacy/ artifact/*
 
 pypi-upload:
-	twine upload dist/*
+	twine upload artifact/*
