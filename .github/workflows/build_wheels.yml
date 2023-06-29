@@ -20,11 +20,13 @@ jobs:
         include:
             - os: ubuntu-20.04
               arch: x86_64
-            - os: windows-2019
+            - os: ubuntu-20.04
+              arch: aarch64
+            - os: windows-2022
               arch: AMD64
-            - os: macos-11
+            - os: macos-12
               arch: x86_64
-            - os: macos-11
+            - os: macos-12
               arch: arm64
       fail-fast: false
 
