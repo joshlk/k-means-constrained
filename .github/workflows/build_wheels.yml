@@ -18,18 +18,35 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macos-12, windows-2022]
         python: [cp38, cp39, cp310, cp311]
-        include:
+        arch: [x86_64, aarch64, AMD64, arm64]
+        # Included archs:
+        # Ubuntu: x86_64, aarch64
+        # MacOS: x86_64, arm64
+        # Windows: AMD64
+        exclude:
             - os: ubuntu-20.04
-              arch: "x86_64 aarch64"
-            - os: windows-2022
-              arch: "AMD64"
+              arch: AMD64
+            - os: ubuntu-20.04
+              arch: arm64
             - os: macos-12
-              arch: "x86_64 arm64"
+              arch: aarch64
+            - os: macos-12
+              arch: AMD64
+            - os:  windows-2022
+              arch: x86_64
+            - os:  windows-2022
+              arch: aarch64
+            - os:  windows-2022
+              arch: arm64
       fail-fast: false
 
     steps:
+      - name: Set up QEMU
+        if: matrix.arch == 'aarch64'
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
       - uses: actions/checkout@v3
-
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v2.13.1
         env:
@@ -38,7 +55,6 @@ jobs:
             CIBW_ARCHS: ${{ matrix.arch }}
             CIBW_BUILD: "${{ matrix.python }}-*"
             CIBW_SKIP: "*-musllinux-*"
-
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
