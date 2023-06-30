@@ -20,9 +20,6 @@ Bump version (major, minor or patch):
 bump2version patch
 ```
 
-Commit to master and get build-id from Azure Pipeline URL:
-https://dev.azure.com/josh0282/k-means-constrained/_build?definitionId=1
-
 Download distributions (artifacts)
 
 ```shell script
@@ -42,7 +39,7 @@ Activate virtual env (might need to `make venv-create`)
 source k-means-env/bin/activate
 ```
 
-Test install (in virtual env. Remember to cd out of k-means-constrained folder):
+Test install (in virtual env. *****Remember to cd out of k-means-constrained folder*****):
 
 ```shell script
 pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple k-means-constrained

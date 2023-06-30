@@ -27,7 +27,7 @@ clean:
 	#git clean -fdX
 
 venv-create:
-	conda create -n k-means-constrained
+	conda create -n k-means-constrained python=3.10
 	conda activate k-means-constrained
 	pip install -r requirements.txt
 	pip install -r requirements-dev.txt
@@ -42,6 +42,10 @@ venv-delete:
 docs:
 	sphinx-build -b html docs_source docs
 
+source-dists:
+	rm -r dist
+	python setup.py sdist --formats=gztar
+
 download-dists:
 	# e.g. `make download-dists ID=8`
 	# ID is run id (get from url)
@@ -51,9 +55,12 @@ download-dists:
 
 check-dist:
 	twine check artifact/*
+	twine check dist/*
 
 test-pypi:
 	twine upload --repository-url https://test.pypi.org/legacy/ artifact/*
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 pypi-upload:
 	twine upload artifact/*
+	twine upload dist/*
