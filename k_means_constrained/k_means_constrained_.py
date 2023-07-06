@@ -769,7 +769,7 @@ class KMeansConstrained(KMeans):
         new_point_cluster_centers_: array, [n_clusters, n_features]
             Coordinates of cluster centers
         """
-        
+        X = np.array(X)
         if sp.issparse(X):
             raise NotImplementedError("Not implemented for sparse X")
 
@@ -780,12 +780,11 @@ class KMeansConstrained(KMeans):
 
         n_clusters = self.n_clusters
         n_samples = X.shape[0]
-        D = euclidean_distances(X[0:2], self.cluster_centers_, squared=False)
+        D = euclidean_distances(X, self.cluster_centers_, squared=False)
         minimumIndices = []
         #for each point, find the closest cluster center.
         for indvidiualPointToCenterDistanceArray in D:
             minimumDistanceIndex = np.where(indvidiualPointToCenterDistanceArray == indvidiualPointToCenterDistanceArray.min())[0][0] #the zero is because the where command returns an array of arrays. There actually also could be more than one cluster with the same minimum distance, in that case we just take the first one. For our problems, that should not happen under normal circumstances. Maybe a better algorithm would be to pick randmoly from the length of the array that where returns, to avoid a single cluster getting extra assignments.
-            print("line 708", minimumDistanceIndex, indvidiualPointToCenterDistanceArray)
             minimumIndices.append(minimumDistanceIndex)
         new_point_labels = np.array(minimumIndices)
 
