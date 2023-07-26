@@ -116,4 +116,4 @@ Below is a runtime comparison between k-means and k-means-constrained whereby th
 </details>
 ---
 
-<sup>1</sup>: [Ortools notes](https://developers.google.com/optimization/reference/graph/min_cost_flow) states the time complexity of their cost-scaling push-relabel algorithm for the min-cost flow problem as $\mathcal{O}(n^2m\log(nC))$ where $n$ is the number of nodes, $m$ is the number of edges and $C$ is the maximum absolute edge cost.
+<sup>1</sup>: [Ortools](https://developers.google.com/optimization/reference/graph/min_cost_flow) states the time complexity of their cost-scaling push-relabel algorithm for the min-cost flow problem as $\mathcal{O}(n^2m\log(nC))$ where $n$ is the number of nodes, $m$ is the number of edges and $C$ is the maximum absolute edge cost.
