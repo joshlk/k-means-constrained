@@ -97,7 +97,9 @@ If you consider the case where $n$ is the same order as $c$ ($n \backsim c$) the
 
 Below is a runtime comparison between k-means and k-means-constrained whereby the number of iterations, initializations, multi-process pool size and dimension size are fixed. The number of clusters is also always one-tenth the number of data points $n=10c$. It is shown above that the runtime is independent of the minimum or maximum cluster size, and so none is included below.
 
-![Data-points vs execution time for k-means vs k-means-constrained. Data-points=10*clusters. No min/max constraints](https://raw.githubusercontent.com/joshlk/k-means-constrained/master/ect/execution_time.png)
+<p align="center">
+<img src="https://raw.githubusercontent.com/joshlk/k-means-constrained/master/etc/execution_time.png" alt="Data-points vs execution time for k-means vs k-means-constrained. Data-points=10*clusters. No min/max constraints" width="50%" height="50%">
+</p>
 
 <details>
   <summary>System details</summary>
