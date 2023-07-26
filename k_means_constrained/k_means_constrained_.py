@@ -483,8 +483,7 @@ def solve_min_cost_flow_graph(edges, costs, capacities, supplies, n_C, n_X):
     min_cost_flow.add_arcs_with_capacity_and_unit_cost(edges[:, 0], edges[:, 1], capacities, costs)
 
     # Add node supplies
-    for count, supply in enumerate(supplies):
-        min_cost_flow.set_node_supply(count, supply)
+    min_cost_flow.set_nodes_supplies(np.arange(len(supplies)), supplies)
 
     # Find the minimum cost flow between node 0 and node 4.
     if min_cost_flow.solve() != min_cost_flow.OPTIMAL:

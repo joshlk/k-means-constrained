@@ -80,3 +80,38 @@ clf.labels_
 ```
     
 </details>
+
+# Time complexity and runtime
+
+k-means-constrained is a more complex algorithm than vanilla k-means and therefore will take longer to execute and has worse scaling characteristics.
+
+Given a number of data points $n$ and clusters $c$, the time complexity of:
+* k-means: $\mathcal{O}(nc)$
+* k-means-constrained<sup>1</sup>: $\mathcal{O}((n^3c+n^2c^2+nc^3)\log(n+c)))$
+
+This assumes a constant number of algorithm iterations and data-point features/dimensions.
+
+If you consider the case where $n$ is the same order as $c$ ($n \backsim c$) then:
+* k-means: $\mathcal{O}(n^2)$
+* k-means-constrained<sup>1</sup>: $\mathcal{O}(n^4\log(n)))$
+
+Below is a runtime comparison between k-means and k-means-constrained whereby the number of iterations, initializations, multi-process pool size and dimension size are fixed. The number of clusters is also always one-tenth the number of data points $n=10c$. It is shown above that the runtime is independent of the minimum or maximum cluster size, and so none is included below.
+
+![Data-points vs execution time for k-means vs k-means-constrained. Data-points=10*clusters. No min/max constraints](https://raw.githubusercontent.com/joshlk/k-means-constrained/master/ect/execution_time.png)
+
+<details>
+  <summary>System details</summary>
+    
+* OS: Linux-5.15.0-75-generic-x86_64-with-glibc2.35
+* CPU: AMD EPYC 7763 64-Core Processor
+* CPU cores: 120
+* k-means-constrained version: 0.7.3
+* numpy version: 1.24.2
+* scipy version: 1.11.1
+* ortools version: 9.6.2534
+* joblib version: 1.3.1
+* sklearn version: 1.3.0
+</details>
+---
+
+<sup>1</sup>: [Ortools notes](https://developers.google.com/optimization/reference/graph/min_cost_flow) states the time complexity of their cost-scaling push-relabel algorithm for the min-cost flow problem as $\mathcal{O}(n^2m\log(nC))$ where $n$ is the number of nodes, $m$ is the number of edges and $C$ is the maximum absolute edge cost.
