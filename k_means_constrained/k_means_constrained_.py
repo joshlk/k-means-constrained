@@ -220,7 +220,8 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
 def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
                               max_iter=300, init='k-means++',
                               verbose=False, x_squared_norms=None,
-                              random_state=None, tol=1e-4):
+                              random_state=None, tol=1e-4, 
+                              distance_metric=euclidean_distance, **kwargs):
     """A single run of k-means constrained, assumes preparation completed prior.
 
     Parameters
@@ -275,6 +276,13 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         If RandomState instance, random_state is the random number generator;
         If None, the random number generator is the RandomState instance used
         by `np.random`.
+
+    distance_metric : callable, default = euclidean_distances
+        Distance metric used for calculating distance between points in the 
+        dataset. Defaults to the euclidean_distances function from 
+        sklearn.metrics.pairwise. 
+        If defining a custom function, it must accept two arguments: X, and 
+        cluster centers, in that order.
 
     Returns
     -------
@@ -331,7 +339,8 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         centers_old = centers.copy()
         # labels assignment is also called the E-step of EM
         labels, inertia = \
-            _labels_constrained(X, centers, size_min, size_max, distances=distances)
+            _labels_constrained(X, centers, size_min, size_max, distances=distances,
+                                distance_metric = distance_metric)
 
         # computation of the means is also called the M-step of EM
         if sp.issparse(X):
@@ -359,7 +368,8 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         # rerun E-step in case of non-convergence so that predicted labels
         # match cluster centers
         best_labels, best_inertia = \
-            _labels_constrained(X, centers, size_min, size_max, distances=distances)
+            _labels_constrained(X, centers, size_min, size_max, distances=distances,
+                                 distance_metric = distance_metric)
 
     return best_labels, best_inertia, best_centers, i + 1
 
