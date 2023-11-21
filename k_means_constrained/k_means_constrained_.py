@@ -364,7 +364,7 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
     return best_labels, best_inertia, best_centers, i + 1
 
 
-def _labels_constrained(X, centers, size_min, size_max, distances):
+def _labels_constrained(X, centers, size_min, size_max, distances, distance_metric = euclidean_distances):
     """Compute labels using the min and max cluster size constraint
 
     This will overwrite the 'distances' array in-place.
@@ -385,6 +385,9 @@ def _labels_constrained(X, centers, size_min, size_max, distances):
 
     distances : numpy array, shape (n_samples,)
         Pre-allocated array in which distances are stored.
+    
+    distance_metric : Callable
+        Function which calculates distances between points
 
     Returns
     -------
@@ -399,7 +402,7 @@ def _labels_constrained(X, centers, size_min, size_max, distances):
 
     # Distances to each centre C. (the `distances` parameter is the distance to the closest centre)
     # K-mean original uses squared distances but this equivalent for constrained k-means
-    D = euclidean_distances(X, C, squared=False)
+    D = distance_metric(X, C, squared=False)
 
     edges, costs, capacities, supplies, n_C, n_X = minimum_cost_flow_problem_graph(X, C, D, size_min, size_max)
     labels = solve_min_cost_flow_graph(edges, costs, capacities, supplies, n_C, n_X)
