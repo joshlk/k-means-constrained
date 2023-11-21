@@ -32,7 +32,7 @@ from ortools.graph.python.min_cost_flow import SimpleMinCostFlow
 def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-means++',
                         n_init=10, max_iter=300, verbose=False,
                         tol=1e-4, random_state=None, copy_x=True, n_jobs=1,
-                        return_n_iter=False):
+                        return_n_iter=False, distance_metric = euclidean_distances):
     """K-Means clustering with minimum and maximum cluster size constraints.
 
     Read more in the :ref:`User Guide <k_means>`.
@@ -111,6 +111,13 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
     return_n_iter : bool, optional
         Whether or not to return the number of iterations.
 
+    distance_metric : callable, default = euclidean_distances
+        Distance metric used for calculating distance between points in the 
+        dataset. Defaults to the euclidean_distances function from 
+        sklearn.metrics.pairwise. 
+        If defining a custom function, it must accept two arguments: X, and 
+        cluster centers, in that order.
+
     Returns
     -------
     centroid : float ndarray with shape (k, n_features)
@@ -179,7 +186,8 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
                 X, n_clusters,
                 size_min=size_min, size_max=size_max,
                 max_iter=max_iter, init=init, verbose=verbose, tol=tol,
-                x_squared_norms=x_squared_norms, random_state=random_state)
+                x_squared_norms=x_squared_norms, random_state=random_state,
+                distance_metric = distance_metric)
             # determine if these results are the best so far
             if best_inertia is None or inertia < best_inertia:
                 best_labels = labels.copy()
@@ -196,7 +204,8 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
                                                verbose=verbose, tol=tol,
                                                x_squared_norms=x_squared_norms,
                                                # Change seed to ensure variety
-                                               random_state=seed)
+                                               random_state=seed, 
+                                               distance_metric = distance_metric)
             for seed in seeds)
         # Get results with the lowest inertia
         labels, inertia, centers, n_iters = zip(*results)
