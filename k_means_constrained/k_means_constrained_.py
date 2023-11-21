@@ -32,7 +32,8 @@ from ortools.graph.python.min_cost_flow import SimpleMinCostFlow
 def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-means++',
                         n_init=10, max_iter=300, verbose=False,
                         tol=1e-4, random_state=None, copy_x=True, n_jobs=1,
-                        return_n_iter=False, distance_metric = euclidean_distances):
+                        return_n_iter=False, distance_metric = euclidean_distances, 
+                        **kwargs):
     """K-Means clustering with minimum and maximum cluster size constraints.
 
     Read more in the :ref:`User Guide <k_means>`.
