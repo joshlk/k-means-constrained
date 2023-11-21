@@ -22,8 +22,8 @@ from joblib import Parallel
 from joblib import delayed
 
 # Internal scikit learn methods imported into this project
-from k_means_constrained.sklearn_import.cluster._k_means import _centers_dense, _centers_sparse
-from k_means_constrained.sklearn_import.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, \
+from .sklearn_import.cluster._k_means import _centers_dense, _centers_sparse
+from .sklearn_import.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, \
     _init_centroids
 
 from ortools.graph.python.min_cost_flow import SimpleMinCostFlow
@@ -350,7 +350,7 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         # labels assignment is also called the E-step of EM
         labels, inertia = \
             _labels_constrained(X, centers, size_min, size_max, distances=distances,
-                                distance_metric = distance_metric)
+                                distance_metric = distance_metric, **kwargs)
 
         # computation of the means is also called the M-step of EM
         if sp.issparse(X):
@@ -379,12 +379,12 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         # match cluster centers
         best_labels, best_inertia = \
             _labels_constrained(X, centers, size_min, size_max, distances=distances,
-                                 distance_metric = distance_metric)
+                                 distance_metric = distance_metric, **kwargs)
 
     return best_labels, best_inertia, best_centers, i + 1
 
 
-def _labels_constrained(X, centers, size_min, size_max, distances, distance_metric ):
+def _labels_constrained(X, centers, size_min, size_max, distances, distance_metric, **kwargs ):
     """Compute labels using the min and max cluster size constraint
 
     This will overwrite the 'distances' array in-place.
@@ -422,7 +422,7 @@ def _labels_constrained(X, centers, size_min, size_max, distances, distance_metr
 
     # Distances to each centre C. (the `distances` parameter is the distance to the closest centre)
     # K-mean original uses squared distances but this equivalent for constrained k-means
-    D = distance_metric(X, C,)
+    D = distance_metric(X, C, **kwargs)
 
     edges, costs, capacities, supplies, n_C, n_X = minimum_cost_flow_problem_graph(X, C, D, size_min, size_max)
     labels = solve_min_cost_flow_graph(edges, costs, capacities, supplies, n_C, n_X)
