@@ -22,8 +22,8 @@ from joblib import Parallel
 from joblib import delayed
 
 # Internal scikit learn methods imported into this project
-from .sklearn_import.cluster._k_means import _centers_dense, _centers_sparse
-from .sklearn_import.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, \
+from k_means_constrained.sklearn_import.cluster._k_means import _centers_dense, _centers_sparse
+from k_means_constrained.sklearn_import.cluster.k_means_ import _validate_center_shape, _tolerance, KMeans, \
     _init_centroids
 
 from ortools.graph.python.min_cost_flow import SimpleMinCostFlow
