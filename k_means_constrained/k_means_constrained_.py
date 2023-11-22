@@ -231,7 +231,7 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
                               max_iter=300, init='k-means++',
                               verbose=False, x_squared_norms=None,
                               random_state=None, tol=1e-4, 
-                              distance_metric=euclidean_distance, **kwargs):
+                              distance_metric=euclidean_distances, **kwargs):
     """A single run of k-means constrained, assumes preparation completed prior.
 
     Parameters
