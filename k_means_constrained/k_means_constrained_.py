@@ -647,10 +647,10 @@ class KMeansConstrained(KMeans):
 
         self.size_min = size_min
         self.size_max = size_max
+        self.distance_metric = distance_metric
 
         super().__init__(n_clusters=n_clusters, init=init, n_init=n_init, max_iter=max_iter, tol=tol,
-                         verbose=verbose, random_state=random_state, copy_x=copy_x, n_jobs=n_jobs, 
-                         distance_metric = distance_metric)
+                         verbose=verbose, random_state=random_state, copy_x=copy_x, n_jobs=n_jobs)
 
     def fit(self, X, y=None):
         """Compute k-means clustering with given constants.
