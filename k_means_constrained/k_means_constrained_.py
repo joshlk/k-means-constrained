@@ -589,6 +589,12 @@ class KMeansConstrained(KMeans):
         (n_cpus + 1 + n_jobs) are used. Thus for n_jobs = -2, all CPUs but one
         are used.
 
+    distance_metric : callable, default = euclidean_distances
+        Distance metric used for calculating distance between points in the 
+        dataset. Defaults to the euclidean_distances function from 
+        sklearn.metrics.pairwise. 
+        If defining a custom function, it must accept two arguments: X, and 
+        cluster centers, in that order.
     Attributes
     ----------
     cluster_centers_ : array, [n_clusters, n_features]
@@ -637,13 +643,14 @@ class KMeansConstrained(KMeans):
     """
 
     def __init__(self, n_clusters=8, size_min=None, size_max=None, init='k-means++', n_init=10, max_iter=300, tol=1e-4,
-                 verbose=False, random_state=None, copy_x=True, n_jobs=1):
+                 verbose=False, random_state=None, copy_x=True, n_jobs=1, distance_metric = euclidean_distances):
 
         self.size_min = size_min
         self.size_max = size_max
 
         super().__init__(n_clusters=n_clusters, init=init, n_init=n_init, max_iter=max_iter, tol=tol,
-                         verbose=verbose, random_state=random_state, copy_x=copy_x, n_jobs=n_jobs)
+                         verbose=verbose, random_state=random_state, copy_x=copy_x, n_jobs=n_jobs, 
+                         distance_metric = distance_metric)
 
     def fit(self, X, y=None):
         """Compute k-means clustering with given constants.
@@ -670,7 +677,7 @@ class KMeansConstrained(KMeans):
                 n_init=self.n_init, max_iter=self.max_iter, verbose=self.verbose,
                 tol=self.tol, random_state=random_state, copy_x=self.copy_x,
                 n_jobs=self.n_jobs,
-                return_n_iter=True)
+                return_n_iter=True, distance_metric=self.distance_metric)
         return self
 
     def predict(self, X, size_min='init', size_max='init'):
@@ -739,7 +746,7 @@ class KMeansConstrained(KMeans):
             raise ValueError("The product of size_min and n_clusters cannot exceed the number of samples (X)")
 
         labels, inertia = \
-            _labels_constrained(X, self.cluster_centers_, size_min, size_max, distances=distances)
+            _labels_constrained(X, self.cluster_centers_, size_min, size_max, distances=distances, distance_metric=self.distance_metric)
 
         return labels
 
