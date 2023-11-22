@@ -32,7 +32,8 @@ from ortools.graph.python.min_cost_flow import SimpleMinCostFlow
 def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-means++',
                         n_init=10, max_iter=300, verbose=False,
                         tol=1e-4, random_state=None, copy_x=True, n_jobs=1,
-                        return_n_iter=False):
+                        return_n_iter=False, distance_metric = euclidean_distances, 
+                        **kwargs):
     """K-Means clustering with minimum and maximum cluster size constraints.
 
     Read more in the :ref:`User Guide <k_means>`.
@@ -111,6 +112,13 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
     return_n_iter : bool, optional
         Whether or not to return the number of iterations.
 
+    distance_metric : callable, default = euclidean_distances
+        Distance metric used for calculating distance between points in the 
+        dataset. Defaults to the euclidean_distances function from 
+        sklearn.metrics.pairwise. 
+        If defining a custom function, it must accept two arguments: X, and 
+        cluster centers, in that order.
+
     Returns
     -------
     centroid : float ndarray with shape (k, n_features)
@@ -179,7 +187,8 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
                 X, n_clusters,
                 size_min=size_min, size_max=size_max,
                 max_iter=max_iter, init=init, verbose=verbose, tol=tol,
-                x_squared_norms=x_squared_norms, random_state=random_state)
+                x_squared_norms=x_squared_norms, random_state=random_state,
+                distance_metric = distance_metric)
             # determine if these results are the best so far
             if best_inertia is None or inertia < best_inertia:
                 best_labels = labels.copy()
@@ -196,7 +205,8 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
                                                verbose=verbose, tol=tol,
                                                x_squared_norms=x_squared_norms,
                                                # Change seed to ensure variety
-                                               random_state=seed)
+                                               random_state=seed, 
+                                               distance_metric = distance_metric)
             for seed in seeds)
         # Get results with the lowest inertia
         labels, inertia, centers, n_iters = zip(*results)
@@ -220,7 +230,8 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
 def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
                               max_iter=300, init='k-means++',
                               verbose=False, x_squared_norms=None,
-                              random_state=None, tol=1e-4):
+                              random_state=None, tol=1e-4, 
+                              distance_metric=euclidean_distances, **kwargs):
     """A single run of k-means constrained, assumes preparation completed prior.
 
     Parameters
@@ -275,6 +286,13 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         If RandomState instance, random_state is the random number generator;
         If None, the random number generator is the RandomState instance used
         by `np.random`.
+
+    distance_metric : callable, default = euclidean_distances
+        Distance metric used for calculating distance between points in the 
+        dataset. Defaults to the euclidean_distances function from 
+        sklearn.metrics.pairwise. 
+        If defining a custom function, it must accept two arguments: X, and 
+        cluster centers, in that order.
 
     Returns
     -------
@@ -331,7 +349,8 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         centers_old = centers.copy()
         # labels assignment is also called the E-step of EM
         labels, inertia = \
-            _labels_constrained(X, centers, size_min, size_max, distances=distances)
+            _labels_constrained(X, centers, size_min, size_max, distances=distances,
+                                distance_metric = distance_metric, **kwargs)
 
         # computation of the means is also called the M-step of EM
         if sp.issparse(X):
@@ -359,12 +378,13 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         # rerun E-step in case of non-convergence so that predicted labels
         # match cluster centers
         best_labels, best_inertia = \
-            _labels_constrained(X, centers, size_min, size_max, distances=distances)
+            _labels_constrained(X, centers, size_min, size_max, distances=distances,
+                                 distance_metric = distance_metric, **kwargs)
 
     return best_labels, best_inertia, best_centers, i + 1
 
 
-def _labels_constrained(X, centers, size_min, size_max, distances):
+def _labels_constrained(X, centers, size_min, size_max, distances, distance_metric, **kwargs ):
     """Compute labels using the min and max cluster size constraint
 
     This will overwrite the 'distances' array in-place.
@@ -385,6 +405,9 @@ def _labels_constrained(X, centers, size_min, size_max, distances):
 
     distances : numpy array, shape (n_samples,)
         Pre-allocated array in which distances are stored.
+    
+    distance_metric : Callable
+        Function which calculates distances between points
 
     Returns
     -------
@@ -399,7 +422,7 @@ def _labels_constrained(X, centers, size_min, size_max, distances):
 
     # Distances to each centre C. (the `distances` parameter is the distance to the closest centre)
     # K-mean original uses squared distances but this equivalent for constrained k-means
-    D = euclidean_distances(X, C, squared=False)
+    D = distance_metric(X, C, **kwargs)
 
     edges, costs, capacities, supplies, n_C, n_X = minimum_cost_flow_problem_graph(X, C, D, size_min, size_max)
     labels = solve_min_cost_flow_graph(edges, costs, capacities, supplies, n_C, n_X)
@@ -566,6 +589,12 @@ class KMeansConstrained(KMeans):
         (n_cpus + 1 + n_jobs) are used. Thus for n_jobs = -2, all CPUs but one
         are used.
 
+    distance_metric : callable, default = euclidean_distances
+        Distance metric used for calculating distance between points in the 
+        dataset. Defaults to the euclidean_distances function from 
+        sklearn.metrics.pairwise. 
+        If defining a custom function, it must accept two arguments: X, and 
+        cluster centers, in that order.
     Attributes
     ----------
     cluster_centers_ : array, [n_clusters, n_features]
@@ -614,10 +643,11 @@ class KMeansConstrained(KMeans):
     """
 
     def __init__(self, n_clusters=8, size_min=None, size_max=None, init='k-means++', n_init=10, max_iter=300, tol=1e-4,
-                 verbose=False, random_state=None, copy_x=True, n_jobs=1):
+                 verbose=False, random_state=None, copy_x=True, n_jobs=1, distance_metric = euclidean_distances):
 
         self.size_min = size_min
         self.size_max = size_max
+        self.distance_metric = distance_metric
 
         super().__init__(n_clusters=n_clusters, init=init, n_init=n_init, max_iter=max_iter, tol=tol,
                          verbose=verbose, random_state=random_state, copy_x=copy_x, n_jobs=n_jobs)
@@ -647,7 +677,7 @@ class KMeansConstrained(KMeans):
                 n_init=self.n_init, max_iter=self.max_iter, verbose=self.verbose,
                 tol=self.tol, random_state=random_state, copy_x=self.copy_x,
                 n_jobs=self.n_jobs,
-                return_n_iter=True)
+                return_n_iter=True, distance_metric=self.distance_metric)
         return self
 
     def predict(self, X, size_min='init', size_max='init'):
@@ -716,7 +746,7 @@ class KMeansConstrained(KMeans):
             raise ValueError("The product of size_min and n_clusters cannot exceed the number of samples (X)")
 
         labels, inertia = \
-            _labels_constrained(X, self.cluster_centers_, size_min, size_max, distances=distances)
+            _labels_constrained(X, self.cluster_centers_, size_min, size_max, distances=distances, distance_metric=self.distance_metric)
 
         return labels
 
