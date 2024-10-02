@@ -118,6 +118,11 @@ Below is a runtime comparison between k-means and k-means-constrained whereby th
 
 <sup>1</sup>: [Ortools states](https://developers.google.com/optimization/reference/graph/min_cost_flow) the time complexity of their cost-scaling push-relabel algorithm for the min-cost flow problem as $\mathcal{O}(n^2m\log(nC))$ where $n$ is the number of nodes, $m$ is the number of edges and $C$ is the maximum absolute edge cost.
 
+# Change log
+
+* v0.5.2 compatible with Numpy +v2.1.1
+* v0.5.1 compatible with Numpy v1.23.0 to 1.26.4
+
 # Citations
 
 If you use this software in your research, please use the following citation:

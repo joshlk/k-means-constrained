@@ -7,3 +7,4 @@ numpydoc
 bump2version
 nose
 scikit-learn>=0.24.2
+cython
