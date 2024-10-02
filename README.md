@@ -120,8 +120,8 @@ Below is a runtime comparison between k-means and k-means-constrained whereby th
 
 # Change log
 
-* v0.5.2 compatible with Numpy +v2.1.1
-* v0.5.1 compatible with Numpy v1.23.0 to 1.26.4
+* v0.7.4 compatible with Numpy +v2.1.1
+* v0.7.3 compatible with Numpy v1.23.0 to 1.26.4
 
 # Citations
 
