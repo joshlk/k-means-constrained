@@ -63,20 +63,21 @@ jobs:
 
     steps:
       - name: Set up QEMU
-        if: matrix.arch == 'aarch64'
-        uses: docker/setup-qemu-action@v2
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.21.1
+        uses: pypa/cibuildwheel@v2.21.2
         env:
+            CIBW_BEFORE_ALL: "pip install --upgrade pip && pip install --upgrade -r requirements-dev.txt"
             CIBW_BEFORE_TEST: "pip install -r requirements-dev.txt"
             CIBW_TEST_COMMAND: "pytest {project}/tests"
             CIBW_ARCHS: ${{ matrix.arch }}
             CIBW_BUILD: "${{ matrix.python }}*"
             CIBW_SKIP: "*musllinux*"
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
