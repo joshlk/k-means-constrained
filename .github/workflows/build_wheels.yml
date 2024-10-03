@@ -19,6 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        # Check for latest setpup: https://github.com/pypa/cibuildwheel/blob/main/examples/github-with-qemu.yml
         os: [ubuntu-latest, windows-latest, macos-13, macos-14]
         python: [cp310, cp311, cp312] # As of 3/Oct/24 ortools was not compatible with cp313 
         include:
@@ -41,10 +42,10 @@ jobs:
     steps:
       - name: Set up QEMU
         if: matrix.arch == 'aarch64'
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v2.21.2 # You may need to update to get latest Python versions
         env:
@@ -58,6 +59,6 @@ jobs:
             # Test
             CIBW_BEFORE_TEST: "pip install --upgrade pip && pip install -r requirements-dev.txt && pip list"
             CIBW_TEST_COMMAND: "pytest {project}/tests"
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl

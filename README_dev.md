@@ -24,7 +24,6 @@ pytest
 ```
 
 2. Push changes to GitHub to build it for all platforms (if you get errors check notes above)
-    MacOS isn't tested so download a copy and test locally.
 
 3. Add changes to change log and bump version  (major, minor or patch):
 
@@ -32,44 +31,32 @@ pytest
 bump2version patch
 ```
 
-
-
-Push to GitHub to build for many version. The MacOS ARM build isn't automatically tested and so should be tested locally.
-
-# Push to PyPi
-Requires: `pip install twine`
-Don't forget to increment version number
-
-Bump version (major, minor or patch):
-
-
-
-Download distributions (artifacts)
+4. Download distributions (artifacts)
 
 ```shell script
 make download-dists ID=$BUILD_ID
 ```
 
-Upload to test PyPi
+5. Upload to test PyPi
 
 ```shell script
 make check-dist
 make test-pypi
 ```
 
-Activate virtual env (might need to `make venv-create`)
+6. Activate virtual env (might need to `make venv-create`)
 
 ```shell script
 source k-means-env/bin/activate
 ```
 
-Test install (in virtual env. *****Remember to cd out of k-means-constrained folder*****):
+7. Test install (in virtual env. *****Remember to cd out of k-means-constrained folder*****):
 
 ```shell script
 pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple k-means-constrained
 ```
 
-Then push to real PyPI:
+8. Then push to real PyPI:
 
 ```shell script
 make pypi-upload
