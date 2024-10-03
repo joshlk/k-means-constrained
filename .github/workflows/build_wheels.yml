@@ -39,18 +39,18 @@ jobs:
           - os: macos-13
             arch: arm64
           # Macos-14 include: arm64
-          - os: macos-13
+          - os: macos-14
             arch: x86_64
-          - os: macos-13
+          - os: macos-14
             arch: aarch64
-          - os: macos-13
+          - os: macos-14
             arch: AMD64
           # Windows include: AMD64
-          - os:  windows-2022
+          - os:  windows-latest
             arch: x86_64
-          - os:  windows-2022
+          - os:  windows-latest
             arch: aarch64
-          - os:  windows-2022
+          - os:  windows-latest
             arch: arm64
       fail-fast: false
 
