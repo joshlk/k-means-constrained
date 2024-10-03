@@ -53,10 +53,14 @@ jobs:
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v2.21.2 # You may need to update to get latest Python versions
         env:
+            # Build
             CIBW_BEFORE_BUILD: "pip install --upgrade pip && pip install -r requirements-dev.txt && pip list"
+            CIBW_BUILD_FRONTEND: "build"
             CIBW_ARCHS: ${{ matrix.arch }}
             CIBW_BUILD: "${{ matrix.python }}*"
             CIBW_SKIP: "*musllinux*"
+
+            # Test
             CIBW_BEFORE_TEST: "pip install --upgrade pip && pip install -r requirements-dev.txt && pip list"
             CIBW_TEST_COMMAND: "pytest {project}/tests"
       - uses: actions/upload-artifact@v3

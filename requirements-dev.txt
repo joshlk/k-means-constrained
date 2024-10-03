@@ -1,11 +1,11 @@
 -r requirements.txt
 pytest>=5.1
-pandas>=1.0.4
+pandas>=2.2.3
 twine
 sphinx
 sphinx-rtd-theme
 numpydoc
 bump2version
 nose
-scikit-learn>=0.24.2
+scikit-learn>=1.5.2
 cython>=3.0.11
