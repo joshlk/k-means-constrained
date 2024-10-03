@@ -51,14 +51,14 @@ jobs:
           platforms: arm64
       - uses: actions/checkout@v3
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.13.1 # You may need to update to get latest Python versions
+        uses: pypa/cibuildwheel@v2.21.2 # You may need to update to get latest Python versions
         env:
-            CIBW_BEFORE_TEST: "pip install --upgrade pip && pip install -r requirements-dev.txt && pip list"
-            CIBW_TEST_COMMAND: "pytest {project}/tests"
             CIBW_BEFORE_BUILD: "pip install --upgrade pip && pip install -r requirements-dev.txt && pip list"
             CIBW_ARCHS: ${{ matrix.arch }}
             CIBW_BUILD: "${{ matrix.python }}*"
             CIBW_SKIP: "*musllinux*"
+            CIBW_BEFORE_TEST: "pip install --upgrade pip && pip install -r requirements-dev.txt && pip list"
+            CIBW_TEST_COMMAND: "pytest {project}/tests"
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
