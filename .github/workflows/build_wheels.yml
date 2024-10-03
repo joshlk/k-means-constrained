@@ -19,13 +19,22 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # macos-13 is an intel runner, macos-14 is apple silicon
+        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
-        architecture: [x86_64, aarch64]
-        exclude:
-          # Windows doesn't support ARM builds directly in GitHub Actions
+        include:
+          # Linux builds
+          - os: ubuntu-latest
+            architectures: "x86_64 aarch64"
+          # Windows builds (x86_64 only)
           - os: windows-latest
-            architecture: aarch64
+            architectures: "AMD64"
+          # macOS Intel
+          - os: macos-13
+            architectures: "x86_64 arm64"
+          # macOS Apple silicon
+          - os: macos-14
+            architectures: "arm64"
 
     steps:
       - uses: actions/checkout@v4
@@ -40,11 +49,11 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.5
         env:
           CIBW_BUILD: cp{310,311,312,313}-*
-          CIBW_ARCHS_LINUX: ${{ matrix.architecture }}
-          CIBW_ARCHS_MACOS: ${{ matrix.architecture }}
-          CIBW_ARCHS_WINDOWS: ${{ matrix.architecture }}
+          CIBW_ARCHS_LINUX: ${{ matrix.architectures }}
+          CIBW_ARCHS_MACOS: ${{ matrix.architectures }}
+          CIBW_ARCHS_WINDOWS: ${{ matrix.architectures }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}-${{ matrix.architecture }}
+          name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
