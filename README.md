@@ -120,7 +120,7 @@ Below is a runtime comparison between k-means and k-means-constrained whereby th
 
 # Change log
 
-* v0.7.4 compatible with Numpy +v2.1.1. Added Python 3.12 support and dropped Python 3.8 and 3.9 support (due to Numpy).
+* v0.7.4 compatible with Numpy +v2.1.1. Added Python 3.12 support and dropped Python 3.8 and 3.9 support (due to Numpy). Linux ARM support has been dropped as we use GitHub runners to build the package and ARM machines was being emulated using QEMU. This however was producing numerical errors. GitHub should natively support Ubuntu ARM images soon and then we can start to re-build them.
 * v0.7.3 compatible with Numpy v1.23.0 to 1.26.4
 
 # Citations

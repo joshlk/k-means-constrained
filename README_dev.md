@@ -26,7 +26,7 @@ pytest
 
 2. Push changes to GitHub to build it for all platforms (if you get errors check notes above)
 
-3. Add changes to change log and bump version  (major, minor or patch):
+3. Add changes to change log and bump version  (major, minor or patch). Push changes (so dist have new version):
 
 ```shell script
 bump2version patch
