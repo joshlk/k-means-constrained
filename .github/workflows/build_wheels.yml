@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build_wheels:
-    name: ${{ matrix.os }}-${{ matrix.architectures }}-${{ matrix.python-version }}
+    name: ${{ matrix.os }}-${{ matrix.architectures }}-py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -25,13 +25,15 @@ jobs:
         include:
           # Linux builds
           - os: ubuntu-latest
-            architectures: "x86_64 aarch64"
+            architectures: "x86_64"
+          - os: ubuntu-latest
+            architectures: "aarch64"
           # Windows builds (x86_64 only)
           - os: windows-latest
-            architectures: "AMD64"
+            architectures: "x86_64"
           # macOS Intel
           - os: macos-13
-            architectures: "x86_64 arm64"
+            architectures: "x86_64"
           # macOS Apple silicon
           - os: macos-14
             architectures: "arm64"
@@ -58,7 +60,7 @@ jobs:
 
           # Test
           #CIBW_BEFORE_TEST: pip install -r requirements-dev.txt
-          CIBW_TEST_COMMAND: pytest {package}/tests
+          CIBW_TEST_COMMAND: "PYTHONPATH=$(pwd) pytest {package}/tests"
 
       - uses: actions/upload-artifact@v4
         with:
