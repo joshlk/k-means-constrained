@@ -12,7 +12,7 @@ import six
 
 
 def check_array(array, accept_sparse=False, dtype="numeric", order=None,
-                copy=False, force_all_finite=True, ensure_2d=True,
+                force_all_finite=True, ensure_2d=True,
                 allow_nd=False, ensure_min_samples=1, ensure_min_features=1,
                 warn_on_dtype=False, estimator=None):
     """Input validation on an array, list, sparse matrix or similar.
@@ -46,14 +46,9 @@ def check_array(array, accept_sparse=False, dtype="numeric", order=None,
 
     order : 'F', 'C' or None (default=None)
         Whether an array will be forced to be fortran or c-style.
-        When order is None (default), then if copy=False, nothing is ensured
-        about the memory layout of the output array; otherwise (copy=True)
-        the memory layout of the returned array is kept as close as possible
+        When order is None (default), the memory layout of the
+        returned array is kept as close as possible
         to the original array.
-
-    copy : boolean (default=False)
-        Whether a forced copy will be triggered. If copy=False, a copy might
-        be triggered by a conversion.
 
     force_all_finite : boolean (default=True)
         Whether to raise an error on np.inf and np.nan in X.
@@ -131,10 +126,10 @@ def check_array(array, accept_sparse=False, dtype="numeric", order=None,
     context = " by %s" % estimator_name if estimator is not None else ""
 
     if sp.issparse(array):
-        array = _ensure_sparse_format(array, accept_sparse, dtype, copy,
-                                      force_all_finite)
+        array = _ensure_sparse_format(array, accept_sparse, dtype,
+                                      force_all_finite, copy=True)
     else:
-        array = np.array(array, dtype=dtype, order=order, copy=copy)
+        array = np.array(array, dtype=dtype, order=order, copy=True)
 
         if ensure_2d:
             if array.ndim == 1:
@@ -145,7 +140,7 @@ def check_array(array, accept_sparse=False, dtype="numeric", order=None,
                     "if it contains a single sample.".format(array))
             array = np.atleast_2d(array)
             # To ensure that array flags are maintained
-            array = np.array(array, dtype=dtype, order=order, copy=copy)
+            array = np.array(array, dtype=dtype, order=order, copy=True)
 
         # make sure we actually converted to numeric:
         if dtype_numeric and array.dtype.kind == "O":

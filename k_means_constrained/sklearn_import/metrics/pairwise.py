@@ -207,7 +207,7 @@ def pairwise_distances_argmin_min(X, Y, axis=1, metric="euclidean",
     # Allocate output arrays
     indices = np.empty(X.shape[0], dtype=np.intp)
     values = np.empty(X.shape[0])
-    values.fill(np.infty)
+    values.fill(np.inf)
 
     for chunk_x in gen_batches(X.shape[0], batch_size):
         X_chunk = X[chunk_x, :]

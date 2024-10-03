@@ -30,7 +30,7 @@ def test_labels_assignment_and_inertia():
     noisy_centers = centers + rng.normal(size=centers.shape)
     labels_gold = - np.ones(n_samples, dtype=int)
     mindist = np.empty(n_samples)
-    mindist.fill(np.infty)
+    mindist.fill(np.inf)
     for center_id in range(n_clusters):
         dist = np.sum((X - noisy_centers[center_id]) ** 2, axis=1)
         labels_gold[dist < mindist] = center_id
@@ -234,7 +234,7 @@ def test_transform():
     X_new = km.transform(km.cluster_centers_)
 
     for c in range(n_clusters):
-        assert_equal(X_new[c, c], 0)
+        assert_array_almost_equal(X_new[c, c], 0)
         for c2 in range(n_clusters):
             if c != c2:
                 assert X_new[c, c2] > 0

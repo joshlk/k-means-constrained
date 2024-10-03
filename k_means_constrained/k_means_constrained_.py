@@ -146,7 +146,7 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
 
     # Validate init array
     if hasattr(init, '__array__'):
-        init = check_array(init, dtype=X.dtype.type, copy=True)
+        init = check_array(init, dtype=X.dtype.type)
         _validate_center_shape(X, n_clusters, init)
 
         if n_init != 1:

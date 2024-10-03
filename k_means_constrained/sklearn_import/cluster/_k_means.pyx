@@ -1,4 +1,5 @@
 # cython: profile=True
+# distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 # Profiling is enabled by default as the overhead does not seem to be measurable
 # on this specific use case.
 

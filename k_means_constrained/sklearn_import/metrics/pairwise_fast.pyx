@@ -1,6 +1,7 @@
 #cython: boundscheck=False
 #cython: cdivision=True
 #cython: wraparound=False
+# distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 
 # Author: Andreas Mueller <amueller@ais.uni-bonn.de>
 #         Lars Buitinck

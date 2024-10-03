@@ -8,6 +8,7 @@
 
 #!python
 #cython: boundscheck=False, wraparound=False, cdivision=True
+# distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 
 from libc.math cimport fabs, sqrt, pow
 cimport numpy as np
