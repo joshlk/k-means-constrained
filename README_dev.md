@@ -5,7 +5,8 @@ Notes:
 * Check which Python versions a new version of Numpy is compatible with. Also check ortools as this is slower to update.
 * Change the Python versions in the GitHub action and the badge in the README
 * You might need to increase the ciwheelbuild version in the GitHub action to be able to use new Python versions
-* Check ciwheelbuild example if you need to change runner image versions (e.g. MacOS, Windows or Ubuntu):
+* Check ciwheelbuild example if you need to change runner image versions (e.g. MacOS, Windows or Ubuntu).
+    Change as little as possible so not to run into other errors:
     https://github.com/pypa/cibuildwheel/blob/main/examples/github-with-qemu.yml
 * Add changes to the change log
 

@@ -25,9 +25,7 @@ jobs:
         include:
         # Linux builds (x86_64 and ARM)
         - os: ubuntu-latest
-          arch: "x86_64"
-        - os: ubuntu-latest
-          arch: "aarch64"
+          arch: ["x86_64", "aarch64"]
         # Windows builds (x86_64 only)
         - os: windows-latest
           arch: "AMD64"
