@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: ${{ matrix.os }}-${{ matrix.architectures }}-${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -35,6 +35,7 @@ jobs:
           # macOS Apple silicon
           - os: macos-14
             architectures: "arm64"
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
@@ -45,13 +46,18 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Build wheels
+      - name: Build and test
         uses: pypa/cibuildwheel@v2.16.5
         env:
+          # Build
           CIBW_BUILD: cp{310,311,312,313}-*
           CIBW_ARCHS_LINUX: ${{ matrix.architectures }}
           CIBW_ARCHS_MACOS: ${{ matrix.architectures }}
           CIBW_ARCHS_WINDOWS: ${{ matrix.architectures }}
+
+          # Test
+          CIBW_BEFORE_TEST: pip install -r requirements-dev.txt
+          CIBW_TEST_COMMAND: pytest {package}/tests
 
       - uses: actions/upload-artifact@v4
         with:
