@@ -129,10 +129,10 @@ If you use this software in your research, please use the following citation:
 
 ```
 @software{Levy-Kramer_k-means-constrained_2018,
-author = {Levy-Kramer, Josh},
-month = apr,
-title = {{k-means-constrained}},
-url = {https://github.com/joshlk/k-means-constrained},
-year = {2018}
+  author = {Levy-Kramer, Josh},
+  month = apr,
+  title = {{k-means-constrained}},
+  url = {https://github.com/joshlk/k-means-constrained},
+  year = {2018}
 }
 ```

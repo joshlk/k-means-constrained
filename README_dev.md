@@ -10,6 +10,8 @@ To test:
 pytest
 ```
 
+Push to GitHub to build for many version. The MacOS ARM build isn't automatically tested and so should be tested locally.
+
 # Push to PyPi
 Requires: `pip install twine`
 Don't forget to increment version number
