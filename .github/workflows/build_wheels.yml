@@ -54,7 +54,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.21.2 # You may need to update to get latest Python versions
         env:
             # Build
-            # NOTE: build dependcies are defined in pyproject.toml as CIBW_BUILD_FRONTEND=build
+            # NOTE: build dependcies are defined in pyproject.toml (including numpy version)
             CIBW_BUILD_FRONTEND: "build"
             CIBW_ARCHS: ${{ matrix.arch }}
             CIBW_BUILD: "${{ matrix.python }}*"
