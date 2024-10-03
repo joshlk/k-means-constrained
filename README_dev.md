@@ -38,7 +38,7 @@ bump2version patch
 make download-dists ID=$BUILD_ID
 ```
 
-5. Upload to test PyPi
+5. Upload to test PyPi (you can get PyPI API token in password manager)
 
 ```shell script
 make check-dist
