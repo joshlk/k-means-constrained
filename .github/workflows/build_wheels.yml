@@ -50,13 +50,14 @@ jobs:
         uses: pypa/cibuildwheel@v2.21.2
         env:
           # Build
+          CIBW_BEFORE_ALL: "pip install --upgrad pip && pip install -r requirements-dev.txt"
           CIBW_BUILD: cp{310,311,312,313}-*
           CIBW_ARCHS_LINUX: ${{ matrix.architectures }}
           CIBW_ARCHS_MACOS: ${{ matrix.architectures }}
           CIBW_ARCHS_WINDOWS: ${{ matrix.architectures }}
 
           # Test
-          CIBW_BEFORE_TEST: pip install -r requirements-dev.txt
+          #CIBW_BEFORE_TEST: pip install -r requirements-dev.txt
           CIBW_TEST_COMMAND: pytest {package}/tests
 
       - uses: actions/upload-artifact@v4
