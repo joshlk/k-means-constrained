@@ -60,14 +60,7 @@ else:
 with open("requirements.txt") as fp:
     install_requires = fp.read().strip().split("\n")
 
-with open("requirements-dev.txt") as fp:
-    dev_requires = fp.read().strip().split("\n")
-
 setup(
     ext_modules=extensions,
     install_requires=install_requires,
-    extras_require={
-        "dev": dev_requires,
-        "docs": ["sphinx", "sphinx-rtd-theme"]
-    }
 )
