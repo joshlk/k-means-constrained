@@ -15,53 +15,49 @@ concurrency:
 
 jobs:
   build_wheels:
-    name: ${{ matrix.os }}-${{ matrix.architectures }}-py${{ matrix.python-version }}
+    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # macos-13 is an intel runner, macos-14 is apple silicon
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-        include:
-          # Linux builds
-          - os: ubuntu-latest
-            architectures: "x86_64"
-          - os: ubuntu-latest
-            architectures: "aarch64"
-          # Windows builds (x86_64 only)
-          - os: windows-latest
-            architectures: "x86_64"
-          # macOS Intel
-          - os: macos-13
-            architectures: "x86_64"
-          # macOS Apple silicon
-          - os: macos-14
-            architectures: "arm64"
+        os: [ubuntu-20.04, macos-12, windows-2022]
+        python: [cp38, cp39, cp310, cp311]
+        arch: [x86_64, aarch64, AMD64, arm64]
+        # Included archs:
+        # Ubuntu: x86_64, aarch64
+        # MacOS: x86_64, arm64
+        # Windows: AMD64
+        exclude:
+            - os: ubuntu-20.04
+              arch: AMD64
+            - os: ubuntu-20.04
+              arch: arm64
+            - os: macos-12
+              arch: aarch64
+            - os: macos-12
+              arch: AMD64
+            - os:  windows-2022
+              arch: x86_64
+            - os:  windows-2022
+              arch: aarch64
+            - os:  windows-2022
+              arch: arm64
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v4
-
       - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v3
+        if: matrix.arch == 'aarch64'
+        uses: docker/setup-qemu-action@v2
         with:
           platforms: arm64
-
-      - name: Build and test
-        uses: pypa/cibuildwheel@v2.21.2
+      - uses: actions/checkout@v3
+      - name: Build and test wheels
+        uses: pypa/cibuildwheel@v2.13.1
         env:
-          # Build
-          CIBW_BEFORE_ALL: "pip install --upgrade pip && pip install -r requirements-dev.txt"
-          CIBW_BUILD: "${{ matrix.python }}*"
-          CIBW_ARCHS_LINUX: ${{ matrix.architectures }}
-          CIBW_ARCHS_MACOS: ${{ matrix.architectures }}
-          CIBW_ARCHS_WINDOWS: ${{ matrix.architectures }}
-
-          # Test
-          #CIBW_BEFORE_TEST: pip install -r requirements-dev.txt
-          CIBW_TEST_COMMAND: "PYTHONPATH=$(pwd) pytest {package}/tests"
-
-      - uses: actions/upload-artifact@v4
+            CIBW_BEFORE_TEST: "pip install -r requirements-dev.txt"
+            CIBW_TEST_COMMAND: "pytest {project}/tests"
+            CIBW_ARCHS: ${{ matrix.arch }}
+            CIBW_BUILD: "${{ matrix.python }}*"
+            CIBW_SKIP: "*musllinux*"
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
