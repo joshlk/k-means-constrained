@@ -53,7 +53,7 @@ jobs:
         env:
           # Build
           CIBW_BEFORE_ALL: "pip install --upgrade pip && pip install -r requirements-dev.txt"
-          CIBW_BUILD: cp{310,311,312,313}-*
+          CIBW_BUILD: "${{ matrix.python }}*"
           CIBW_ARCHS_LINUX: ${{ matrix.architectures }}
           CIBW_ARCHS_MACOS: ${{ matrix.architectures }}
           CIBW_ARCHS_WINDOWS: ${{ matrix.architectures }}
