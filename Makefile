@@ -57,7 +57,9 @@ check-dist:
 	twine check artifact/*
 
 test-pypi:
+	# Get API key from password manager
 	twine upload --repository-url https://test.pypi.org/legacy/ artifact/*
 
 pypi-upload:
+	# Get API key from password manager
 	twine upload artifact/*
