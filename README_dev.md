@@ -3,7 +3,7 @@
 Notes:
 * Numpy build version is in `pyproject.toml` while the runtime version is in `requirements.txt`
 * Check which Python versions a new version of Numpy is compatible with. Also check ortools as this is slower to update.
-* Change the Python versions in the GitHub action and the badge in the README
+* Change the Python versions in the GitHub action. Also change the badge in the README and the comment in the installation section.
 * You might need to increase the ciwheelbuild version in the GitHub action to be able to use new Python versions
 * Check ciwheelbuild example if you need to change runner image versions (e.g. MacOS, Windows or Ubuntu).
     Change as little as possible so not to run into other errors:
