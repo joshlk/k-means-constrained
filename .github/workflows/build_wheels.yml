@@ -61,7 +61,7 @@ jobs:
             CIBW_SKIP: "*musllinux*"
 
             # Test
-            CIBW_BEFORE_TEST: "pip install --upgrade pip && pip install -r requirements-dev.txt && pip list"
+            CIBW_BEFORE_TEST: "python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt && python -m pip list"
             CIBW_TEST_COMMAND: "pytest {project}/tests"
       - uses: actions/upload-artifact@v3
         with:
