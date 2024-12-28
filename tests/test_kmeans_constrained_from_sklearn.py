@@ -9,8 +9,7 @@ from k_means_constrained import KMeansConstrained
 from sklearn.datasets import make_blobs
 from sklearn.metrics.cluster import v_measure_score
 from unittest import SkipTest
-
-from sklearn.utils._testing import assert_raise_message
+import pytest
 
 # non centered, sparse centers to check the
 centers = np.array([
@@ -296,8 +295,8 @@ def test_k_means_function():
 def test_max_iter_error():
 
     km = KMeansConstrained(max_iter=-1)
-    assert_raise_message(ValueError, 'Number of iterations should be',
-                         km.fit, X)
+    with pytest.raises(ValueError, match='Number of iterations should be'):
+        km.fit(X)
 
 
 def test_float_precision():
