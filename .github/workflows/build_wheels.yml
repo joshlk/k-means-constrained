@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.23.3 # You may need to update to get latest Python versions
+        uses: pypa/cibuildwheel@v3.0.0 # You may need to update to get latest Python versions
         env:
             # Build
             # NOTE: build dependencies are defined in pyproject.toml (including numpy version)
