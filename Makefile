@@ -50,16 +50,16 @@ download-dists:
 	# e.g. `make download-dists ID=8`
 	# ID is run id (get from url. Not Job ID)
 	# Need gh installed. `brew install gh`
-	rm -r artifact || true
+	rm -r wheels || true
 	gh run download $(ID)
 
 check-dist:
-	twine check artifact/*
+	twine check wheels/*
 
 test-pypi:
 	# Get API key from password manager
-	twine upload --repository-url https://test.pypi.org/legacy/ artifact/*
+	twine upload --repository-url https://test.pypi.org/legacy/ wheels/*
 
 pypi-upload:
 	# Get API key from password manager
-	twine upload artifact/*
+	twine upload wheels/*
