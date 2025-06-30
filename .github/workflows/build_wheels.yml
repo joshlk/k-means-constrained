@@ -19,21 +19,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Check for latest setpup: https://github.com/pypa/cibuildwheel/blob/main/examples/github-with-qemu.yml
-        # macos-13 is Intel and macos-14 is Apple Silicon
+        # Check for latest setpup: https://github.com/pypa/cibuildwheel/blob/main/examples/github-with-qemu.yml
+        # macos-13 is Intel and macos-14 is Apple Silicon
         os: [ubuntu-latest, windows-latest, macos-13, macos-14]
-        python: [cp310, cp311, cp312, cp313]
-        arch: [x86_64, aarch64, AMD64, arm64]
-        # Use exclude instead of include as it doesn't have the correct behviour (overirdes values)
+        python: [cp310, cp311, cp312] # As of 3/Oct/24 ortools was not compatible with cp313
+        arch: [x86_64, AMD64, arm64] # As of 3/Oct/24 QEMU produces numerical errors. So dropping for now
+        # Use exclude instead of include as it doesn't have the correct behaviour (overrides values)
         exclude:
-          # Ubuntu include: x86_64, aarch64
+          # Ubuntu include: x86_64
           - os: ubuntu-latest
             arch: AMD64
           - os: ubuntu-latest
             arch: arm64
           # Macos-13 include: x86_64
-          - os: macos-13
-            arch: aarch64
           - os: macos-13
             arch: AMD64
           - os: macos-13
@@ -42,27 +40,18 @@ jobs:
           - os: macos-14
             arch: x86_64
           - os: macos-14
-            arch: aarch64
-          - os: macos-14
             arch: AMD64
           # Windows include: AMD64
           - os:  windows-latest
             arch: x86_64
           - os:  windows-latest
-            arch: aarch64
-          - os:  windows-latest
             arch: arm64
       fail-fast: false
 
     steps:
-      - name: Set up QEMU
-        if: matrix.arch == 'aarch64'
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: arm64
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.21.2 # You may need to update to get latest Python versions
+        uses: pypa/cibuildwheel@v2.22.0 # You may need to update to get latest Python versions
         env:
             # Build
             # NOTE: build dependcies are defined in pyproject.toml (including numpy version)
@@ -72,8 +61,17 @@ jobs:
             CIBW_SKIP: "*musllinux*"
 
             # Test
-            CIBW_BEFORE_TEST: "pip install --upgrade pip && pip install -r requirements-dev.txt && pip list"
+            CIBW_BEFORE_TEST: "python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt && python -m pip list"
             CIBW_TEST_COMMAND: "pytest {project}/tests"
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
+          name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.python }}
+  merge:
+    runs-on: ubuntu-latest
+    needs: build_wheels
+    steps:
+      - uses: actions/upload-artifact/merge@v4
+        with:
+            name: wheels
+            delete-merged: true
