@@ -15,46 +15,22 @@ concurrency:
 
 jobs:
   build_wheels:
-    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.python }}
+    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Check for latest setpup: https://github.com/pypa/cibuildwheel/blob/main/examples/github-with-qemu.yml
-        # macos-13 is Intel and macos-14 is Apple Silicon
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        # macos-13 is an intel runner, macos-14 is apple silicon
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-13, macos-14]
         python: [cp310, cp311, cp312, cp313]
-        arch: [x86_64, AMD64, arm64] # As of 3/Oct/24 QEMU produces numerical errors. So dropping for now
-        # Use exclude instead of include as it doesn't have the correct behaviour (overrides values)
-        exclude:
-          # Ubuntu include: x86_64
-          - os: ubuntu-latest
-            arch: AMD64
-          - os: ubuntu-latest
-            arch: arm64
-          # Macos-13 include: x86_64
-          - os: macos-13
-            arch: AMD64
-          - os: macos-13
-            arch: arm64
-          # Macos-14 include: arm64
-          - os: macos-14
-            arch: x86_64
-          - os: macos-14
-            arch: AMD64
-          # Windows include: AMD64
-          - os:  windows-latest
-            arch: x86_64
-          - os:  windows-latest
-            arch: arm64
-      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
-      - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.22.0 # You may need to update to get latest Python versions
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.0.0 # You may need to update to get latest Python versions
         env:
             # Build
-            # NOTE: build dependcies are defined in pyproject.toml (including numpy version)
+            # NOTE: build dependencies are defined in pyproject.toml (including numpy version)
             CIBW_BUILD_FRONTEND: "build"
             CIBW_ARCHS: ${{ matrix.arch }}
             CIBW_BUILD: "${{ matrix.python }}*"
