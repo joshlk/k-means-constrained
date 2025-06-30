@@ -20,7 +20,8 @@ jobs:
     strategy:
       matrix:
         # macos-13 is an intel runner, macos-14 is apple silicon
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-11-arm, macos-13, macos-14]
+        # windows-11-arm is currently not supported by the dependencies
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-13, macos-14]
         python: [cp310, cp311, cp312, cp313]
       fail-fast: false
 
@@ -32,9 +33,9 @@ jobs:
             # Build
             # NOTE: build dependencies are defined in pyproject.toml (including numpy version)
             CIBW_BUILD_FRONTEND: "build"
-            CIBW_ARCHS: native # Build for native architecture of the build machine
-            CIBW_BUILD: "${{ matrix.python }}*"
-            CIBW_SKIP: "*musllinux*"
+            CIBW_ARCHS: native # Build only for the native architecture of the build machine
+            CIBW_BUILD: "${{ matrix.python }}*" # Build only for the specified Python version
+            CIBW_SKIP: "*musllinux*" # Don't build musllinux wheels, as ortools doesn't always support
 
             # Test
             CIBW_BEFORE_TEST: "python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt && python -m pip list"
