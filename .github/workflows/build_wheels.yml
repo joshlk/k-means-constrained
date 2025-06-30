@@ -22,8 +22,8 @@ jobs:
         # Check for latest setpup: https://github.com/pypa/cibuildwheel/blob/main/examples/github-with-qemu.yml
         # macos-13 is Intel and macos-14 is Apple Silicon
         os: [ubuntu-latest, windows-latest, macos-13, macos-14]
-        python: [cp310, cp311, cp312, cp313] # As of 3/Oct/24 ortools was not compatible with cp313
-        arch: [x86_64, AMD64, arm64, aarch64, ARM64] # As of 3/Oct/24 QEMU produces numerical errors. So dropping for now
+        python: [cp310, cp311, cp312] # As of 3/Oct/24 ortools was not compatible with cp313
+        arch: [x86_64, AMD64, arm64] # As of 3/Oct/24 QEMU produces numerical errors. So dropping for now
         # Use exclude instead of include as it doesn't have the correct behaviour (overrides values)
         exclude:
           # Ubuntu include: x86_64
@@ -31,33 +31,21 @@ jobs:
             arch: AMD64
           - os: ubuntu-latest
             arch: arm64
-          - os: ubuntu-latest
-            arch: ARM64
           # Macos-13 include: x86_64
           - os: macos-13
             arch: AMD64
           - os: macos-13
             arch: arm64
-          - os: macos-13
-            arch: aarch64
-          - os: macos-13
-            arch: ARM64
           # Macos-14 include: arm64
           - os: macos-14
             arch: x86_64
           - os: macos-14
             arch: AMD64
-          - os: macos-14
-            arch: aarch64
-          - os: macos-14
-            arch: ARM64
           # Windows include: AMD64
           - os:  windows-latest
             arch: x86_64
           - os:  windows-latest
             arch: arm64
-          - os: windows-latest
-            arch: aarch64
       fail-fast: false
 
     steps:
