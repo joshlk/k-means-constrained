@@ -58,7 +58,6 @@ jobs:
             CIBW_BUILD_FRONTEND: "build"
             CIBW_ARCHS: ${{ matrix.arch }}
             CIBW_BUILD: "${{ matrix.python }}*"
-            CIBW_SKIP: "*musllinux*"
 
             # Test
             CIBW_BEFORE_TEST: "python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt && python -m pip list"
