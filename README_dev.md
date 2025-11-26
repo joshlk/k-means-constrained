@@ -30,6 +30,7 @@ pytest
 
 ```shell script
 bump2version patch
+git push # Must push as otherwise wheels have the wrong version
 ```
 
 4. Download distributions (artifacts)
