@@ -120,6 +120,7 @@ Below is a runtime comparison between k-means and k-means-constrained whereby th
 
 # Change log
 
+* v0.8.0 (2025-11-26) Fixed IndexError due to imprecision in _k_init centroid selection. Ported fix from scikit-learn: [scikit-learn#11756](https://github.com/scikit-learn/scikit-learn/pull/11756)
 * v0.7.6 (2025-06-30) Add Python v3.13 and Linux ARM support.
 * v0.7.5 fix comment in README on Python version that is supported
 * v0.7.4 compatible with Numpy +v2.1.1. Added Python 3.12 support and dropped Python 3.8 and 3.9 support (due to Numpy). Linux ARM support has been dropped as we use GitHub runners to build the package and ARM machines was being emulated using QEMU. This however was producing numerical errors. GitHub should natively support Ubuntu ARM images soon and then we can start to re-build them.
