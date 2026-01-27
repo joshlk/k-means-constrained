@@ -120,6 +120,7 @@ Below is a runtime comparison between k-means and k-means-constrained whereby th
 
 # Change log
 
+* v0.9.0 (2026-01-27) Added Python 3.14 support. Bumped ortools to >= 9.15.6755.
 * v0.8.0 (2025-11-26) Fixed IndexError due to imprecision in _k_init centroid selection. Ported fix from scikit-learn: [scikit-learn#11756](https://github.com/scikit-learn/scikit-learn/pull/11756)
 * v0.7.6 (2025-06-30) Add Python v3.13 and Linux ARM support.
 * v0.7.5 fix comment in README on Python version that is supported

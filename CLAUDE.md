@@ -8,7 +8,7 @@ This file provides guidance for AI assistants working with the k-means-constrain
 
 - **Author:** Josh Levy-Kramer
 - **License:** BSD 3-Clause
-- **Version:** 0.8.0
+- **Version:** 0.9.0
 - **Python support:** 3.10, 3.11, 3.12, 3.13, 3.14
 
 ## Repository Structure
@@ -135,14 +135,44 @@ Cython compiler directives: `language_level=3`, `embedsignature=True`. Extension
 
 ## Versioning & Release
 
-- Version tracked in `setup.cfg` and `k_means_constrained/__init__.py`
-- Managed via `bump2version` (config in `.bumpversion.cfg`): `bump2version patch|minor|major`
-- Release workflow detailed in `README_dev.md`:
-  1. Build and test locally (`make compile && pytest`)
-  2. Push to GitHub (triggers CI wheel builds)
-  3. Bump version, push again
-  4. Download CI artifacts (`make download-dists ID=$BUILD_ID`)
-  5. Upload to test PyPI (`make test-pypi`), verify, then real PyPI (`make pypi-upload`)
+### Version locations
+
+The version string appears in three files that must stay in sync:
+
+| File | Format |
+|---|---|
+| `setup.cfg` | `version = X.Y.Z` |
+| `k_means_constrained/__init__.py` | `__version__ = 'X.Y.Z'` |
+| `.bumpversion.cfg` | `current_version = X.Y.Z` |
+
+### Bumping the version
+
+Use `bump2version` (config in `.bumpversion.cfg`) which updates all three files and creates a git commit + tag automatically:
+
+```sh
+bump2version patch   # 0.9.0 → 0.9.1
+bump2version minor   # 0.9.0 → 0.10.0
+bump2version major   # 0.9.0 → 1.0.0
+```
+
+If bumping manually (without `bump2version`), update all three files listed above.
+
+### Changelog
+
+The changelog lives in `README.md` under the `# Change log` heading. When bumping the version, add a new entry at the top of the list following the existing format:
+
+```
+* vX.Y.Z (YYYY-MM-DD) Brief description of changes.
+```
+
+### Release workflow (from `README_dev.md`)
+
+1. Build and test locally (`make compile && pytest`)
+2. Push to GitHub (triggers CI wheel builds)
+3. Add changelog entry in `README.md`, bump version (`bump2version patch|minor|major`), push again
+4. Download CI artifacts (`make download-dists ID=$BUILD_ID`)
+5. Upload to test PyPI (`make test-pypi`), verify install
+6. Upload to real PyPI (`make pypi-upload`)
 
 ## Code Conventions
 
