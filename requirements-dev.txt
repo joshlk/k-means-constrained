@@ -1,7 +1,8 @@
 -r requirements.txt
 pytest>=5.1
 pandas>=2.2.3
-twine
+twine>=6.1.0
+packaging>=24.2
 sphinx
 sphinx-rtd-theme
 numpydoc
