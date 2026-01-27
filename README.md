@@ -1,5 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/k-means-constrained)](https://pypi.org/project/k-means-constrained/)
-![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
 [![Build](https://github.com/joshlk/k-means-constrained/actions/workflows/build_wheels.yml/badge.svg)](https://github.com/joshlk/k-means-constrained/actions/workflows/build_wheels.yml)
 [**Documentation**](https://joshlk.github.io/k-means-constrained/)
 
@@ -34,7 +34,7 @@ You can install the k-means-constrained from PyPI:
 pip install k-means-constrained
 ```
 
-It is supported on Python 3.10, 3.11, 3.12 and 3.13. Previous versions of k-means-constrained support older versions of Python and Numpy.
+It is supported on Python 3.10, 3.11, 3.12, 3.13 and 3.14. Previous versions of k-means-constrained support older versions of Python and Numpy.
 
 # Example
 

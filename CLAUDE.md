@@ -9,7 +9,7 @@ This file provides guidance for AI assistants working with the k-means-constrain
 - **Author:** Josh Levy-Kramer
 - **License:** BSD 3-Clause
 - **Version:** 0.8.0
-- **Python support:** 3.10, 3.11, 3.12, 3.13
+- **Python support:** 3.10, 3.11, 3.12, 3.13, 3.14
 
 ## Repository Structure
 
@@ -110,7 +110,7 @@ Cython compiler directives: `language_level=3`, `embedsignature=True`. Extension
 
 - **Framework:** pytest
 - **Test files:** `tests/test_k_means_constrained_.py` (core algorithm), `tests/test_kmeans_constrained_from_sklearn.py` (sklearn compatibility)
-- **CI matrix:** Ubuntu (x64+ARM), Windows, macOS (Intel+Apple Silicon) x Python 3.10-3.13
+- **CI matrix:** Ubuntu (x64+ARM), Windows, macOS (Intel+Apple Silicon) x Python 3.10-3.14
 - **CI tool:** `cibuildwheel` v3.0.0 — builds and tests wheels across platforms
 - **CI triggers:** push to master, PRs, weekly schedule (Thursday 1 AM UTC), manual dispatch
 - **Note:** musllinux is skipped (ortools compatibility)
@@ -119,7 +119,7 @@ Cython compiler directives: `language_level=3`, `embedsignature=True`. Extension
 
 ### Runtime (`requirements.txt`)
 
-- `ortools >= 9.11.4210` — Google OR-Tools for min-cost flow
+- `ortools >= 9.15.6755` — Google OR-Tools for min-cost flow
 - `scipy >= 1.14.1` — sparse matrices, distance functions
 - `numpy >= 2.1.1` — array operations
 - `six` — Python 2/3 compatibility (legacy)
