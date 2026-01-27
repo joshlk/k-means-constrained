@@ -22,20 +22,20 @@ jobs:
         # macos-15-intel is an intel runner, macos-latest is apple silicon
         # windows-11-arm is currently not supported by the dependencies
         os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-15-intel, macos-latest]
-        python: [cp310, cp311, cp312, cp313]
+        python: [cp310, cp311, cp312, cp313, cp314]
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v3.0.0 # You may need to update to get latest Python versions
+        uses: pypa/cibuildwheel@v3.3.1
         env:
             # Build
             # NOTE: build dependencies are defined in pyproject.toml (including numpy version)
             CIBW_BUILD_FRONTEND: "build"
             CIBW_ARCHS: native # Build only for the native architecture of the build machine
             CIBW_BUILD: "${{ matrix.python }}*" # Build only for the specified Python version
-            CIBW_SKIP: "*musllinux*" # Don't build musllinux wheels, as ortools doesn't always support
+            CIBW_SKIP: "*musllinux* cp3*t-*" # Don't build musllinux (ortools) or free-threaded wheels
 
             # Test
             CIBW_BEFORE_TEST: "python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt && python -m pip list"
