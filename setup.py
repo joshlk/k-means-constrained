@@ -53,6 +53,16 @@ CYTHONIZE = bool(int(os.getenv("CYTHONIZE", 1))) and cythonize is not None
 
 if CYTHONIZE:
     compiler_directives = {"language_level": 3, "embedsignature": True}
+
+    # Declare the extension modules safe to run without the GIL (PEP 703).
+    # This sets the Py_mod_gil slot to Py_MOD_GIL_NOT_USED so that importing
+    # them on a free-threaded CPython build (3.13t+) does not silently
+    # re-enable the GIL. Requires Cython >= 3.1; on older Cython (e.g. a local
+    # dev environment) the directive is skipped and builds behave as before.
+    import Cython
+    if tuple(int(p) for p in Cython.__version__.split(".")[:2]) >= (3, 1):
+        compiler_directives["freethreading_compatible"] = True
+
     extensions = cythonize(extensions, compiler_directives=compiler_directives)
 else:
     extensions = no_cythonize(extensions)
