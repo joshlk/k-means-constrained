@@ -12,6 +12,7 @@
 #          Robert Layton <robertlayton@gmail.com>
 # License: BSD 3 clause
 
+import sys
 import warnings
 import numpy as np
 import scipy.sparse as sp
@@ -27,6 +28,18 @@ from k_means_constrained.sklearn_import.cluster.k_means_ import _validate_center
     _init_centroids
 
 from ortools.graph.python.min_cost_flow import SimpleMinCostFlow
+
+
+def _gil_disabled():
+    """Return True when running on a free-threaded CPython build with the
+    GIL actually disabled (PEP 703). On such builds, threads achieve true
+    parallelism, so process-based parallelism (and its pickling/memory
+    overhead) is unnecessary."""
+    try:
+        return not sys._is_gil_enabled()
+    except AttributeError:
+        # Python < 3.13, or a non-free-threaded build
+        return False
 
 
 def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-means++',
@@ -189,7 +202,12 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
     else:
         # parallelisation of k-means runs
         seeds = random_state.randint(np.iinfo(np.int32).max, size=n_init)
-        results = Parallel(n_jobs=n_jobs, verbose=0)(
+        # On free-threaded builds threads run truly in parallel, so use the
+        # threading backend: workers share X (no pickling, less memory) and
+        # avoid process start-up costs. On GIL builds keep joblib's default
+        # process-based backend, otherwise threads would serialise.
+        prefer = "threads" if _gil_disabled() else None
+        results = Parallel(n_jobs=n_jobs, verbose=0, prefer=prefer)(
             delayed(kmeans_constrained_single)(X, n_clusters,
                                                size_min=size_min, size_max=size_max,
                                                max_iter=max_iter, init=init,
