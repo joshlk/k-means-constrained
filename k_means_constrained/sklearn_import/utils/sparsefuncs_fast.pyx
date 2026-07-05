@@ -29,25 +29,26 @@ def csr_row_norms(X):
     return _csr_row_norms(X.data, X.shape, X.indices, X.indptr)
 
 
-def _csr_row_norms(np.ndarray[floating, ndim=1, mode="c"] X_data,
+def _csr_row_norms(floating[::1] X_data,
                    shape,
-                   np.ndarray[int, ndim=1, mode="c"] X_indices,
-                   np.ndarray[int, ndim=1, mode="c"] X_indptr):
+                   int[::1] X_indices,
+                   int[::1] X_indptr):
     cdef:
-        unsigned int n_samples = shape[0]
-        unsigned int n_features = shape[1]
+        Py_ssize_t n_samples = shape[0]
         np.ndarray[DOUBLE, ndim=1, mode="c"] norms
 
         np.npy_intp i, j
         double sum_
 
     norms = np.zeros(n_samples, dtype=np.float64)
+    cdef double[::1] norms_view = norms
 
-    for i in range(n_samples):
-        sum_ = 0.0
-        for j in range(X_indptr[i], X_indptr[i + 1]):
-            sum_ += X_data[j] * X_data[j]
-        norms[i] = sum_
+    with nogil:
+        for i in range(n_samples):
+            sum_ = 0.0
+            for j in range(X_indptr[i], X_indptr[i + 1]):
+                sum_ += X_data[j] * X_data[j]
+            norms_view[i] = sum_
 
     return norms
 

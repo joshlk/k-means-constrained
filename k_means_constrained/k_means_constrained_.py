@@ -12,6 +12,7 @@
 #          Robert Layton <robertlayton@gmail.com>
 # License: BSD 3 clause
 
+import sys
 import warnings
 import numpy as np
 import scipy.sparse as sp
@@ -27,6 +28,14 @@ from k_means_constrained.sklearn_import.cluster.k_means_ import _validate_center
     _init_centroids
 
 from ortools.graph.python.min_cost_flow import SimpleMinCostFlow
+
+
+def _gil_disabled():
+    """True when running on a free-threaded CPython build with the GIL disabled."""
+    try:
+        return not sys._is_gil_enabled()
+    except AttributeError:
+        return False
 
 
 def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-means++',
@@ -189,7 +198,9 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
     else:
         # parallelisation of k-means runs
         seeds = random_state.randint(np.iinfo(np.int32).max, size=n_init)
-        results = Parallel(n_jobs=n_jobs, verbose=0)(
+        # Without the GIL, threads share X with no pickling or process start-up cost
+        prefer = "threads" if _gil_disabled() else None
+        results = Parallel(n_jobs=n_jobs, verbose=0, prefer=prefer)(
             delayed(kmeans_constrained_single)(X, n_clusters,
                                                size_min=size_min, size_max=size_max,
                                                max_iter=max_iter, init=init,

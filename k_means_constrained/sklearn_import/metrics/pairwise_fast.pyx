@@ -8,6 +8,7 @@
 #
 # License: BSD 3 clause
 
+from libc.math cimport fabs
 from libc.string cimport memset
 import numpy as np
 cimport numpy as np
@@ -41,6 +42,7 @@ def _sparse_manhattan(floating1d X_data, int[:] X_indices, int[:] X_indptr,
     """
     cdef double[::1] row = np.empty(n_features)
     cdef np.npy_intp ix, iy, j
+    cdef double d
 
     with nogil:
         for ix in range(D.shape[0]):
@@ -53,5 +55,7 @@ def _sparse_manhattan(floating1d X_data, int[:] X_indices, int[:] X_indptr,
                 for j in range(Y_indptr[iy], Y_indptr[iy + 1]):
                     row[Y_indices[j]] -= Y_data[j]
 
-                with gil:
-                    D[ix, iy] = row[0].abs().sum()
+                d = 0.0
+                for j in range(n_features):
+                    d += fabs(row[j])
+                D[ix, iy] = d

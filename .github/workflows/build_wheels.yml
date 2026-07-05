@@ -35,7 +35,9 @@ jobs:
             CIBW_BUILD_FRONTEND: "build"
             CIBW_ARCHS: native # Build only for the native architecture of the build machine
             CIBW_BUILD: "${{ matrix.python }}*" # Build only for the specified Python version
-            CIBW_SKIP: "*musllinux* cp3*t-*" # Don't build musllinux (ortools) or free-threaded wheels
+            # Skip musllinux (no ortools wheels). Free-threaded (cp314t) wheels are Linux-only:
+            # ortools has no free-threaded wheels for macOS/Windows yet.
+            CIBW_SKIP: "*musllinux* ${{ runner.os != 'Linux' && 'cp3*t-*' || '' }}"
 
             # Test
             CIBW_BEFORE_TEST: "python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt && python -m pip list"

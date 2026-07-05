@@ -53,6 +53,12 @@ CYTHONIZE = bool(int(os.getenv("CYTHONIZE", 1))) and cythonize is not None
 
 if CYTHONIZE:
     compiler_directives = {"language_level": 3, "embedsignature": True}
+
+    # Mark extensions as free-threading compatible (requires Cython >= 3.1)
+    import Cython
+    if tuple(int(p) for p in Cython.__version__.split(".")[:2]) >= (3, 1):
+        compiler_directives["freethreading_compatible"] = True
+
     extensions = cythonize(extensions, compiler_directives=compiler_directives)
 else:
     extensions = no_cythonize(extensions)

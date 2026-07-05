@@ -1,7 +1,4 @@
-# cython: profile=True
 # distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
-# Profiling is enabled by default as the overhead does not seem to be measurable
-# on this specific use case.
 
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
 #         Olivier Grisel <olivier.grisel@ensta.org>
@@ -19,18 +16,14 @@ from k_means_constrained.sklearn_import.utils.sparsefuncs_fast import assign_row
 ctypedef np.float64_t DOUBLE
 ctypedef np.int32_t INT
 
-ctypedef floating (*DOT)(int N, floating *X, int incX, floating *Y,
-                         int incY)
-
 
 np.import_array()
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-def _centers_dense(np.ndarray[floating, ndim=2] X,
-        np.ndarray[INT, ndim=1] labels, int n_clusters,
-        np.ndarray[floating, ndim=1] distances):
+def _centers_dense(floating[:, :] X, INT[::1] labels, int n_clusters,
+                   floating[:] distances):
     """M step of the K-means EM algorithm
 
     Computation of cluster centers / means.
@@ -54,44 +47,48 @@ def _centers_dense(np.ndarray[floating, ndim=2] X,
         The resulting centers
     """
     ## TODO: add support for CSR input
-    cdef int n_samples, n_features
-    n_samples = X.shape[0]
-    n_features = X.shape[1]
-    cdef int i, j, c
-    cdef np.ndarray[floating, ndim=2] centers
-    if floating is float:
-        centers = np.zeros((n_clusters, n_features), dtype=np.float32)
-    else:
-        centers = np.zeros((n_clusters, n_features), dtype=np.float64)
+    cdef Py_ssize_t n_samples = X.shape[0]
+    cdef Py_ssize_t n_features = X.shape[1]
+    cdef Py_ssize_t i, j
+    cdef INT c
 
-    n_samples_in_cluster = np.bincount(labels, minlength=n_clusters)
+    if floating is float:
+        dtype = np.float32
+    else:
+        dtype = np.float64
+    centers_arr = np.zeros((n_clusters, n_features), dtype=dtype)
+    cdef floating[:, ::1] centers = centers_arr
+
+    n_samples_in_cluster = np.bincount(np.asarray(labels), minlength=n_clusters)
     empty_clusters = np.where(n_samples_in_cluster == 0)[0]
     # maybe also relocate small clusters?
 
     if len(empty_clusters):
         # find points to reassign empty clusters to
-        far_from_centers = distances.argsort()[::-1]
+        far_from_centers = np.asarray(distances).argsort()[::-1]
+        X_arr = np.asarray(X)
 
         for i, cluster_id in enumerate(empty_clusters):
             # XXX two relocated clusters could be close to each other
-            new_center = X[far_from_centers[i]]
-            centers[cluster_id] = new_center
+            centers_arr[cluster_id] = X_arr[far_from_centers[i]]
             n_samples_in_cluster[cluster_id] = 1
 
-    for i in range(n_samples):
-        for j in range(n_features):
-            centers[labels[i], j] += X[i, j]
+    with nogil:
+        for i in range(n_samples):
+            c = labels[i]
+            for j in range(n_features):
+                centers[c, j] += X[i, j]
 
-    centers /= n_samples_in_cluster[:, np.newaxis]
+    centers_arr /= n_samples_in_cluster[:, np.newaxis]
 
-    return centers
+    return centers_arr
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-def _centers_sparse(X, np.ndarray[INT, ndim=1] labels, n_clusters,
-        np.ndarray[floating, ndim=1] distances):
+def _centers_sparse(X, INT[::1] labels, n_clusters,
+                    floating[:] distances):
     """M step of the K-means EM algorithm
 
     Computation of cluster centers / means.
@@ -114,44 +111,48 @@ def _centers_sparse(X, np.ndarray[INT, ndim=1] labels, n_clusters,
     centers : array, shape (n_clusters, n_features)
         The resulting centers
     """
-    cdef int n_features = X.shape[1]
-    cdef int curr_label
+    cdef Py_ssize_t n_features = X.shape[1]
+    cdef Py_ssize_t n_samples = labels.shape[0]
+    cdef Py_ssize_t i, ind, j
+    cdef INT curr_label
 
-    cdef np.ndarray[floating, ndim=1] data = X.data
-    cdef np.ndarray[int, ndim=1] indices = X.indices
-    cdef np.ndarray[int, ndim=1] indptr = X.indptr
+    cdef floating[::1] data = X.data
+    cdef int[::1] indices = X.indices
+    cdef int[::1] indptr = X.indptr
 
-    cdef np.ndarray[floating, ndim=2, mode="c"] centers
     cdef np.ndarray[np.npy_intp, ndim=1] far_from_centers
     cdef np.ndarray[np.npy_intp, ndim=1, mode="c"] n_samples_in_cluster = \
-        np.bincount(labels, minlength=n_clusters)
+        np.bincount(np.asarray(labels), minlength=n_clusters)
     cdef np.ndarray[np.npy_intp, ndim=1, mode="c"] empty_clusters = \
         np.where(n_samples_in_cluster == 0)[0]
     cdef int n_empty_clusters = empty_clusters.shape[0]
 
     if floating is float:
-        centers = np.zeros((n_clusters, n_features), dtype=np.float32)
+        dtype = np.float32
     else:
-        centers = np.zeros((n_clusters, n_features), dtype=np.float64)
+        dtype = np.float64
+    centers_arr = np.zeros((n_clusters, n_features), dtype=dtype)
+    cdef floating[:, ::1] centers = centers_arr
 
     # maybe also relocate small clusters?
 
     if n_empty_clusters > 0:
         # find points to reassign empty clusters to
-        far_from_centers = distances.argsort()[::-1][:n_empty_clusters]
+        far_from_centers = np.asarray(distances).argsort()[::-1][:n_empty_clusters]
 
         # XXX two relocated clusters could be close to each other
-        assign_rows_csr(X, far_from_centers, empty_clusters, centers)
+        assign_rows_csr(X, far_from_centers, empty_clusters, centers_arr)
 
         for i in range(n_empty_clusters):
             n_samples_in_cluster[empty_clusters[i]] = 1
 
-    for i in range(labels.shape[0]):
-        curr_label = labels[i]
-        for ind in range(indptr[i], indptr[i + 1]):
-            j = indices[ind]
-            centers[curr_label, j] += data[ind]
+    with nogil:
+        for i in range(n_samples):
+            curr_label = labels[i]
+            for ind in range(indptr[i], indptr[i + 1]):
+                j = indices[ind]
+                centers[curr_label, j] += data[ind]
 
-    centers /= n_samples_in_cluster[:, np.newaxis]
+    centers_arr /= n_samples_in_cluster[:, np.newaxis]
 
-    return centers
+    return centers_arr
