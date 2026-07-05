@@ -8,7 +8,7 @@ This file provides guidance for AI assistants working with the k-means-constrain
 
 - **Author:** Josh Levy-Kramer
 - **License:** BSD 3-Clause
-- **Version:** 0.9.0
+- **Version:** 0.9.1
 - **Python support:** 3.10, 3.11, 3.12, 3.13, 3.14
 
 ## Repository Structure
