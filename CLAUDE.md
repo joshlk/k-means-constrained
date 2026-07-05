@@ -104,7 +104,7 @@ Three Cython `.pyx` files compile to C extensions:
 
 Compilation is controlled by the `CYTHONIZE` environment variable (defaults to `1`). Set `CYTHONIZE=0` to skip Cythonization and use pre-compiled `.c`/`.cpp` files.
 
-Cython compiler directives: `language_level=3`, `embedsignature=True`, and (with Cython >= 3.1) `freethreading_compatible=True`, which marks the extensions safe to import on free-threaded CPython builds without re-enabling the GIL. Extensions use `boundscheck(False)`, `wraparound(False)`, `cdivision(True)` for performance.
+Cython compiler directives: `language_level=3`, `embedsignature=True`, `freethreading_compatible=True` (requires Cython >= 3.1). Extensions use `boundscheck(False)`, `wraparound(False)`, `cdivision(True)` for performance.
 
 ## Testing
 
@@ -113,15 +113,12 @@ Cython compiler directives: `language_level=3`, `embedsignature=True`, and (with
 - **CI matrix:** Ubuntu (x64+ARM), Windows, macOS (Intel+Apple Silicon) x Python 3.10-3.14
 - **CI tool:** `cibuildwheel` v3.0.0 — builds and tests wheels across platforms
 - **CI triggers:** push to master, PRs, weekly schedule (Thursday 1 AM UTC), manual dispatch
-- **Note:** musllinux is skipped (ortools compatibility). Free-threaded (cp314t) wheels are built and tested on Linux only, as ortools currently publishes free-threaded wheels for manylinux but not macOS/Windows.
+- **Note:** musllinux is skipped (ortools compatibility). Free-threaded (cp314t) wheels are built and tested on Linux only (ortools has no free-threaded macOS/Windows wheels).
 
 ## Free-threading (no-GIL) support
 
-- The Cython extensions declare `freethreading_compatible=True` (see `setup.py`), so importing them on CPython 3.14t does not re-enable the GIL. Their main loops run inside `with nogil` blocks and they hold no module-level mutable state, so multiple `KMeansConstrained` instances can be fitted concurrently from different threads (verified by `tests/test_threading.py`).
-- **Known upstream limitation:** `ortools` does not declare `Py_mod_gil` support, so importing it on a free-threaded build re-enables the GIL with a RuntimeWarning. Users can force the GIL off with `PYTHON_GIL=0` (or `-X gil=0`); the full test suite and concurrency tests pass in that mode. Until ortools fixes this upstream (pybind11 `py::mod_gil_not_used()` in their module definitions), out-of-the-box no-GIL operation is blocked by ortools, not by this package.
-- On standard GIL builds, threads cannot achieve full parallelism for this algorithm regardless of the Cython changes: the dominant cost is `SimpleMinCostFlow.solve()`, and ortools' pybind11 binding does not release the GIL around it. Use process-based parallelism (joblib default) or a free-threaded build.
-- `k_means_constrained_.py` detects a disabled GIL via `sys._is_gil_enabled()` and switches the joblib `Parallel` call for `n_init` runs to `prefer="threads"`, giving true in-process thread parallelism (shared `X`, no pickling). On standard GIL builds joblib's default process-based backend is kept.
-- Requires Cython >= 3.1 to build with the free-threading directive; older Cython still builds but without it.
+- The Cython extensions declare `freethreading_compatible=True` and run their main loops `nogil`; concurrent use is covered by `tests/test_threading.py`.
+- `ortools` does not declare `Py_mod_gil` support, so importing it on a free-threaded build re-enables the GIL with a RuntimeWarning — users must set `PYTHON_GIL=0` until fixed upstream. Its `solve()` binding also holds the GIL on standard builds, so `n_init` runs use joblib `prefer="threads"` only when `sys._is_gil_enabled()` is False; GIL builds keep the process backend.
 
 ## Dependencies
 

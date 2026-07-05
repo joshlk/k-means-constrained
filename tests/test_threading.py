@@ -1,10 +1,5 @@
-"""Thread-safety tests: multiple KMeansConstrained instances running
-concurrently in different threads must be safe and deterministic.
-
-On a free-threaded CPython build (3.14t) these fits execute truly in
-parallel. On a standard (GIL) build they interleave; either way results
-must be identical to serial execution.
-"""
+"""Concurrent use of KMeansConstrained must be safe and give results
+identical to serial execution."""
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
@@ -29,8 +24,6 @@ def _fit(X, seed):
 
 
 def test_concurrent_instances_distinct_data():
-    """Each thread fits its own instance on its own data; results must
-    match the same fits run serially."""
     datasets = [_make_data(seed) for seed in range(N_TASKS)]
 
     serial = [_fit(X, seed) for seed, X in enumerate(datasets)]
@@ -46,9 +39,6 @@ def test_concurrent_instances_distinct_data():
 
 
 def test_concurrent_instances_shared_data():
-    """Many instances fitted concurrently on the *same* array. X must not
-    be mutated (copy_x=True is the default) and results must be
-    deterministic per seed."""
     X = _make_data(0)
     X_before = X.copy()
 
@@ -66,8 +56,6 @@ def test_concurrent_instances_shared_data():
 
 
 def test_concurrent_predict_shared_estimator():
-    """predict() on an already-fitted estimator is read-only and must be
-    safe to call from many threads at once."""
     X = _make_data(0)
     clf = KMeansConstrained(n_clusters=4, size_min=20, size_max=80,
                             n_init=2, random_state=0)
@@ -84,12 +72,8 @@ def test_concurrent_predict_shared_estimator():
 @pytest.mark.skipif(not hasattr(sys, "_is_gil_enabled"),
                     reason="GIL status introspection requires Python >= 3.13")
 def test_own_extensions_declare_freethreading_support():
-    """On a free-threaded build, CPython emits a RuntimeWarning naming any
-    extension module that forces the GIL back on. None of this package's
-    own Cython extensions may appear in such a warning (they declare
-    freethreading_compatible). NOTE: ortools currently does not declare
-    Py_mod_gil support, so a warning naming ortools is expected and
-    tolerated here until fixed upstream."""
+    """No GIL re-enablement warning may name this package's extensions.
+    A warning naming ortools is expected until fixed upstream."""
     import subprocess
     code = (
         "import warnings\n"

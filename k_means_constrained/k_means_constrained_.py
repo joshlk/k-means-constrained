@@ -31,14 +31,10 @@ from ortools.graph.python.min_cost_flow import SimpleMinCostFlow
 
 
 def _gil_disabled():
-    """Return True when running on a free-threaded CPython build with the
-    GIL actually disabled (PEP 703). On such builds, threads achieve true
-    parallelism, so process-based parallelism (and its pickling/memory
-    overhead) is unnecessary."""
+    """True when running on a free-threaded CPython build with the GIL disabled."""
     try:
         return not sys._is_gil_enabled()
     except AttributeError:
-        # Python < 3.13, or a non-free-threaded build
         return False
 
 
@@ -202,10 +198,7 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
     else:
         # parallelisation of k-means runs
         seeds = random_state.randint(np.iinfo(np.int32).max, size=n_init)
-        # On free-threaded builds threads run truly in parallel, so use the
-        # threading backend: workers share X (no pickling, less memory) and
-        # avoid process start-up costs. On GIL builds keep joblib's default
-        # process-based backend, otherwise threads would serialise.
+        # Without the GIL, threads share X with no pickling or process start-up cost
         prefer = "threads" if _gil_disabled() else None
         results = Parallel(n_jobs=n_jobs, verbose=0, prefer=prefer)(
             delayed(kmeans_constrained_single)(X, n_clusters,

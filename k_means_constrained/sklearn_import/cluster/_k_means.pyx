@@ -6,13 +6,6 @@
 #
 # License: BSD 3 clause
 
-# NOTE on threading: these functions are stateless (no module-level mutable
-# state) and their main loops run inside `with nogil` blocks, so on a
-# standard CPython build multiple threads can execute them concurrently,
-# and on a free-threaded (no-GIL) build they run fully in parallel.
-# Callers must not mutate the input arrays from another thread while a
-# call is in progress.
-
 import numpy as np
 cimport numpy as np
 cimport cython
