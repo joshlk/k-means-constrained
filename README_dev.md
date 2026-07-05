@@ -42,6 +42,7 @@ make download-dists ID=$BUILD_ID
 5. Upload to test PyPi (you can get PyPI API token in password manager)
 
 ```shell script
+source .venv/bin/activate
 make check-dist
 make test-pypi
 ```
