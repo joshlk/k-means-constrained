@@ -120,7 +120,7 @@ Below is a runtime comparison between k-means and k-means-constrained whereby th
 
 # Change log
 
-* v0.9.1 (2026-07-05) Free-threaded Python (no-GIL) support. cp314t wheels for Linux.
+* v0.9.1 (2026-07-05) Free-threaded Python (no-GIL) support. cp314t wheels for Linux. (Note that ortools provides a free-threading build 3.14t but doesn't declare "GIL-not-used" and re-enables the GIL. You can force no GIL by using PYTHON_GIL=0. [ortools PR to fix this](https://github.com/google/or-tools/pull/5243))
 * v0.9.0 (2026-01-27) Added Python 3.14 support. Bumped ortools to >= 9.15.6755.
 * v0.8.0 (2025-11-26) Fixed IndexError due to imprecision in _k_init centroid selection. Ported fix from scikit-learn: [scikit-learn#11756](https://github.com/scikit-learn/scikit-learn/pull/11756)
 * v0.7.6 (2025-06-30) Add Python v3.13 and Linux ARM support.
